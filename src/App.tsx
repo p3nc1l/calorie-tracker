@@ -14,7 +14,7 @@ function App() {
   const [lastPage, setLastPage] = useState(0);
 
   return (
-    <Box className="relative w-screen h-screen overflow-hidden">
+    <Box className="relative w-screen h-screen overflow-x-hidden">
       <motion.div 
         initial={{x: `calc(-100vw * ${lastPage})`}} 
         animate={{x: `calc(-100vw * ${page})`}} 
