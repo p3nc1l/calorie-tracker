@@ -1,11 +1,21 @@
 import { Box, TextField } from "@mui/material";
 import { useEffect, useState } from "react";
-//import axios from "axios";
+import { useDebounce } from "@uidotdev/usehooks";
+import axios from "axios";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
+import TableContainer from "@mui/material/TableContainer";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
+import Paper from "@mui/material/Paper";
 
 const searchFoods = async (query: string) => {
   try {
-    //fetch api and return response
-    return query || "";
+    const response = await axios.get("http://p3nc1l.go.ro/api/search-foods", {
+      params: { "q": query }
+    });
+    return response.data || "";
   } catch (error) {
     console.error("Error fetching foods:", error);
   }
@@ -13,27 +23,48 @@ const searchFoods = async (query: string) => {
 
 const Foods = () => {
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState("");
+  const [results, setResults] = useState<[]>([]);
+
+  const debouncedQuery = useDebounce(query, 1000);
 
   useEffect(() => {
     const fetchResults = async () => {
-      if (query.length > 2) {
-        const result = await searchFoods(query);
-        setResults(result || "");
+      if (debouncedQuery.length > 2) {
+        const result = await searchFoods(debouncedQuery);
+        setResults(result.foods.food || []);
       } else {
-        setResults("");
+        setResults([]);
       }
     };
     fetchResults();
-  }, [query]);
+  }, [debouncedQuery]);
 
   return (
     <Box className={"w-screen flex-none flex flex-col items-center"}>
       <Box className="w-full max-w-7xl px-4 mb-16">
         <Box className="mt-16">
           <TextField fullWidth label="Search Foods" variant="outlined" value={query} onChange={(e) => setQuery(e.target.value)} />
-          {results}
         </Box>
+        {results.length > 0 && <TableContainer component={Paper} className="mt-8">
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Food</TableCell>
+                <TableCell align="right">Brand</TableCell>
+                <TableCell align="right">Description</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {results.map((food: { food_name: string, food_description: string, brand_name?: string }) => (
+                <TableRow key={food.food_name}>
+                  <TableCell>{food.food_name}</TableCell>
+                  <TableCell align="right">{food.brand_name || "Generic"}</TableCell>
+                  <TableCell align="right">{food.food_description}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>}
       </Box>
     </Box>
   )
