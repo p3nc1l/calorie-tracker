@@ -40,33 +40,31 @@ const Foods = () => {
   }, [debouncedQuery]);
 
   return (
-    <Box className={"w-screen flex-none flex flex-col items-center"}>
-      <Box className="w-full max-w-7xl px-4 mb-16">
-        <Box className="mt-16 max-w-2xl mx-auto">
-          <TextField fullWidth label="Search Foods" variant="outlined" value={query} onChange={(e) => setQuery(e.target.value)} />
-        </Box>
-        {results.length > 0 && <TableContainer component={Paper} className="mt-8">
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Food</TableCell>
-                <TableCell align="right">Brand</TableCell>
-                <TableCell align="right">Description</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {results.map((food: { food_name: string, food_description: string, brand_name?: string }) => (
-                <TableRow key={food.food_name}>
-                  <TableCell>{food.food_name}</TableCell>
-                  <TableCell align="right">{food.brand_name || "Non-branded"}</TableCell>
-                  <TableCell align="right">{food.food_description}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>}
+    <>
+      <Box className="mt-16 max-w-2xl mx-auto">
+        <TextField fullWidth label="Search Foods" variant="outlined" value={query} onChange={(e) => setQuery(e.target.value)} />
       </Box>
-    </Box>
+      {results.length > 0 && <TableContainer component={Paper} className="mt-8">
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Food</TableCell>
+              <TableCell align="right">Brand</TableCell>
+              <TableCell align="right">Description</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {results.map((food: { food_name: string, food_description: string, brand_name?: string }) => (
+              <TableRow key={food.food_name}>
+                <TableCell>{food.food_name}</TableCell>
+                <TableCell align="right">{food.brand_name || "Non-branded"}</TableCell>
+                <TableCell align="right">{food.food_description}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>}
+    </>
   )
 }
 

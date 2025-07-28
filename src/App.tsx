@@ -8,6 +8,7 @@ import { useState } from "react";
 import { Box } from "@mui/material";
 
 import { motion } from "motion/react";
+import PageLayout from "./components/pages/PageLayout.tsx";
 
 function App() {
   const [page, setPage] = useState(0);
@@ -19,9 +20,9 @@ function App() {
         initial={{x: `calc(-100vw * ${lastPage})`}} 
         animate={{x: `calc(-100vw * ${page})`}} 
         transition={{type: "tween"}}
-        className="flex">
-        <Home />
-        <Foods />
+        className="flex w-fit">
+        <PageLayout active={page == 0 ? true : false}><Home /></PageLayout>
+        <PageLayout active={page == 1 ? true : false}><Foods /></PageLayout>
         <Meals />
         <Profile />
       </motion.div>
