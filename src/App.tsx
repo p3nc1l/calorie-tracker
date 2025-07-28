@@ -9,10 +9,26 @@ import { Box } from "@mui/material";
 
 import { motion } from "motion/react";
 import PageLayout from "./components/pages/PageLayout.tsx";
+import { usePrevious } from "@uidotdev/usehooks";
+
+interface Food {
+  name: string,
+  id: number,
+  brand: string | null,
+  calories: number,
+  fat: number,
+  carbs: number,
+  protein: number
+}
+
+export interface Meal {
+  timestamp: number,
+  foods: Food[]
+}
 
 function App() {
   const [page, setPage] = useState(0);
-  const [lastPage, setLastPage] = useState(0);
+  const lastPage = usePrevious(page);
 
   return (
     <Box className="relative w-screen h-screen overflow-x-hidden">
@@ -26,7 +42,7 @@ function App() {
         <Meals />
         <Profile />
       </motion.div>
-      <Navbar page={page} setPage={(newPage) => {setLastPage(page); setPage(newPage)}}/>
+      <Navbar page={page} setPage={(newPage) => setPage(newPage)}/>
     </Box>
   )
 }

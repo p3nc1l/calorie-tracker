@@ -4,15 +4,28 @@ import CardContent from "@mui/material/CardContent"
 import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
 import { LocalDining, Whatshot } from "@mui/icons-material";
+import { useLocalStorage } from "@uidotdev/usehooks";
+
+import { type Meal } from "../../App";
 
 const Home = () => {
-  const dailyGoal = Number(localStorage.getItem("dailyGoal")) || Infinity;
-  const reachedToday = JSON.parse(localStorage.getItem("reachedToday") || "{}");
+  const [nickname] = useLocalStorage("nickname", "user");
+  const [dailyGoal] = useLocalStorage("dailyGoal", Infinity);
+  const [meals] = useLocalStorage<Meal[]>("meals", []);
+
+  const mealsToday = meals.filter((meal) => meal.timestamp - (Date.now() - Date.now() % 86400000) > 0);
+
+  const reachedToday = {
+    calories: mealsToday.reduce((sumMeals, meal) => sumMeals + meal.foods.reduce((sumFoods, food) => sumFoods + food.calories, 0), 0) || 0,
+    fat: mealsToday.reduce((sumMeals, meal) => sumMeals + meal.foods.reduce((sumFoods, food) => sumFoods + food.fat, 0), 0) || 0,
+    carbs: mealsToday.reduce((sumMeals, meal) => sumMeals + meal.foods.reduce((sumFoods, food) => sumFoods + food.carbs, 0), 0) || 0,
+    protein: mealsToday.reduce((sumMeals, meal) => sumMeals + meal.foods.reduce((sumFoods, food) => sumFoods + food.protein, 0), 0) || 0
+  }
 
   return (
     <>
       <Box className="mt-20">
-        <Typography sx={{ fontWeight: 600 }} variant="h3" component={"h1"}>Hi, <span className="bg-gradient-to-r from-green-700 to-yellow-500 text-transparent bg-clip-text">{localStorage.getItem("nickname") || "user"}</span><br />{(dailyGoal) - (reachedToday.calories || 0)} more calories to reach your daily goal</Typography>
+        <Typography sx={{ fontWeight: 600 }} variant="h3" component={"h1"}>Hi, <span className="bg-gradient-to-r from-green-700 to-yellow-500 text-transparent bg-clip-text">{nickname}</span><br />{(dailyGoal) - (reachedToday.calories)} more calories to reach your daily goal</Typography>
       </Box>
       <Box className="flex flex-row flex-wrap mt-20 gap-4">
         <Card>
@@ -20,13 +33,13 @@ const Home = () => {
             <Box className="flex flex-row items-start justify-center gap-12">
               <Box className="flex flex-col gap-16">
                 <Box className="flex items-center justify-center w-max"><Whatshot color="primary" className="pb-0.5"/><Typography>Calories</Typography></Box>
-                <Typography variant="h5" component={"p"}>{reachedToday.calories || 0} / {dailyGoal}</Typography>
+                <Typography variant="h5" component={"p"}>{reachedToday.calories} / {dailyGoal}</Typography>
               </Box>
               <Box className="w-32">
                 <CircularProgressbar 
-                  value={reachedToday.calories || 0} 
+                  value={reachedToday.calories} 
                   maxValue={dailyGoal} 
-                  text={`${Math.round(((reachedToday.calories || 0) / (dailyGoal)) * 100)}%`}
+                  text={`${Math.round(((reachedToday.calories) / (dailyGoal)) * 100)}%`}
                   styles={buildStyles({
                     pathColor: 'rgba(34, 197, 94)',
                     textColor: '#000',
