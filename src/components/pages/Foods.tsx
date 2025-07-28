@@ -12,7 +12,7 @@ import Paper from "@mui/material/Paper";
 
 const searchFoods = async (query: string) => {
   try {
-    const response = await axios.get("http://p3nc1l.go.ro/api/search-foods", {
+    const response = await axios.get(import.meta.env.VITE_API_BASE_URL + "/search-foods", {
       params: { "q": query }
     });
     return response.data || "";
