@@ -58,7 +58,7 @@ const Foods = () => {
               {results.map((food: { food_name: string, food_description: string, brand_name?: string }) => (
                 <TableRow key={food.food_name}>
                   <TableCell>{food.food_name}</TableCell>
-                  <TableCell align="right">{food.brand_name || "Generic"}</TableCell>
+                  <TableCell align="right">{food.brand_name || "Non-branded"}</TableCell>
                   <TableCell align="right">{food.food_description}</TableCell>
                 </TableRow>
               ))}
