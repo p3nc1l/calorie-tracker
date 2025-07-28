@@ -42,7 +42,7 @@ const Foods = () => {
   return (
     <Box className={"w-screen flex-none flex flex-col items-center"}>
       <Box className="w-full max-w-7xl px-4 mb-16">
-        <Box className="mt-16">
+        <Box className="mt-16 max-w-2xl mx-auto">
           <TextField fullWidth label="Search Foods" variant="outlined" value={query} onChange={(e) => setQuery(e.target.value)} />
         </Box>
         {results.length > 0 && <TableContainer component={Paper} className="mt-8">
