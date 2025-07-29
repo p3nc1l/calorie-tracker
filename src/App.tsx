@@ -22,6 +22,7 @@ interface Food {
 }
 
 export interface Meal {
+  name: string,
   timestamp: number,
   foods: Food[]
 }
@@ -39,7 +40,7 @@ function App() {
         className="flex w-fit">
         <PageLayout active={page == 0 ? true : false}><Home /></PageLayout>
         <PageLayout active={page == 1 ? true : false}><Foods /></PageLayout>
-        <Meals />
+        <PageLayout active={page == 2 ? true : false}><Meals /></PageLayout>
         <Profile />
       </motion.div>
       <Navbar page={page} setPage={(newPage) => setPage(newPage)}/>
