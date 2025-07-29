@@ -13,7 +13,7 @@ const Home = () => {
   const [dailyGoal] = useLocalStorage("dailyGoal", Infinity);
   const [meals] = useLocalStorage<Meal[]>("meals", []);
 
-  const mealsToday = meals.filter((meal) => meal.timestamp - (Date.now() - Date.now() % 86400000) > 0);
+  const mealsToday = meals.filter((meal) => new Date(meal.timestamp).toLocaleDateString() == new Date().toLocaleDateString());
 
   const reachedToday = {
     calories: mealsToday.reduce((sumMeals, meal) => sumMeals + meal.foods.reduce((sumFoods, food) => sumFoods + food.calories, 0), 0) || 0,
