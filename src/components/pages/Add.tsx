@@ -78,7 +78,7 @@ const Add = ({ closePage, ref }: { closePage: () => void, ref: RefObject<HTMLDiv
   }
 
   return (
-    <Paper ref={ref} className={`w-screen absolute bottom-0 left-0 overflow-auto overflow-x-hidden ${isMobile ? "h-19/20" : "h-screen"}`} elevation={0} sx={{borderRadius: isMobile ? "16px 16px 0 0" : 0}}>
+    <Paper ref={ref} className={`w-screen fixed bottom-0 left-0 overflow-auto overflow-x-hidden ${isMobile ? "h-19/20" : "h-screen"}`} elevation={0} sx={{borderRadius: isMobile ? "16px 16px 0 0" : 0}}>
       <Box className="w-full"><IconButton onClick={closePage} className="float-right" size="large"><Close /></IconButton></Box>
       <Box className={"w-screen flex-none flex flex-col items-center"}>
         <Box className="w-full max-w-7xl px-4 mb-16 flex flex-col gap-4">

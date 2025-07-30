@@ -34,10 +34,9 @@ function App() {
   const [page, setPage] = useState(0);
   const lastPage = usePrevious(page);
   const [addPage, setAddPage] = useState(false);
-  const [addPageAnimating, setAddPageAnimating] = useState(false);
 
   return (
-    <Box className={`relative w-screen h-screen overflow-x-hidden ${(addPage || addPageAnimating) && "overflow-y-hidden"}`}>
+    <Box className={`w-screen h-screen overflow-x-hidden`}>
       <motion.div 
         initial={{x: `calc(-100vw * ${lastPage})`}} 
         animate={{x: `calc(-100vw * ${page})`}} 
@@ -50,7 +49,7 @@ function App() {
       </motion.div>
       <Navbar page={page} setPage={(newPage) => setPage(newPage)} setAddPage={setAddPage} />
       <Backdrop open={addPage == true}></Backdrop>
-      <AnimatePresence onExitComplete={() => setAddPageAnimating(false)}>{addPage && <MotionAddPage initial={{y: "100vh"}} animate={{y: 0}} exit={{y: "100vh"}} transition={{type: "tween"}} closePage={() => setAddPage(false)} onAnimationStart={() => setAddPageAnimating(true)} onAnimationComplete={() => setAddPageAnimating(false)} />}</AnimatePresence>
+      <AnimatePresence>{addPage && <MotionAddPage initial={{y: "100vh"}} animate={{y: 0}} exit={{y: "100vh"}} transition={{type: "tween"}} closePage={() => setAddPage(false)} />}</AnimatePresence>
     </Box>
   )
 }
