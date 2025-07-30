@@ -53,9 +53,9 @@ const Home = () => {
           <CardContent>
             <Box className="flex items-center justify-center w-max"><LocalDining color="primary" className="pb-0.5"/><Typography>Nutrients Today</Typography></Box>
             <Grid container spacing={2} className="mt-4">
-              <Grid size={10}><Typography>Fat</Typography></Grid><Grid size={2}><Typography>{reachedToday.fat || 0}g</Typography></Grid>
-              <Grid size={10}><Typography>Carbohydrates</Typography></Grid><Grid size={2}><Typography>{reachedToday.carbs || 0}g</Typography></Grid>
-              <Grid size={10}><Typography>Protein</Typography></Grid><Grid size={2}><Typography>{reachedToday.protein || 0}g</Typography></Grid>
+              <Grid size={10}><Typography>Fat</Typography></Grid><Grid size={2}><Typography align="right">{reachedToday.fat} g</Typography></Grid>
+              <Grid size={10}><Typography>Carbohydrates</Typography></Grid><Grid size={2}><Typography align="right">{reachedToday.carbs} g</Typography></Grid>
+              <Grid size={10}><Typography>Protein</Typography></Grid><Grid size={2}><Typography align="right">{reachedToday.protein} g</Typography></Grid>
             </Grid>
           </CardContent>
         </Card>
