@@ -1,7 +1,7 @@
-import { Paper, Box, IconButton, Typography, TextField, Table, TableHead, TableBody, TableRow, TableCell, TableContainer } from "@mui/material"
+import { Paper, Box, IconButton, Typography, TextField, Table, TableHead, TableBody, TableRow, TableCell, TableContainer, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Button } from "@mui/material"
 import { Close } from "@mui/icons-material"
 import type { RefObject } from "react"
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { isMobile } from "react-device-detect"
 import { useDebounce, useLocalStorage } from "@uidotdev/usehooks";
 import type { Meal } from "../../App";
@@ -60,6 +60,23 @@ const Add = ({ closePage, ref }: { closePage: () => void, ref: RefObject<HTMLDiv
 
   const debouncedFoodQuery = useDebounce(foodQuery, 500);
 
+  const isMount = useRef(false);
+  const [changesMade, setChangesMade] = useState(false);
+
+  const [closeDialog, setCloseDialog] = useState(false);
+
+  function CloseButton() {
+    if (!changesMade) closePage();
+    else setCloseDialog(true);
+  }
+
+  useEffect(() => {isMount.current = true}, []);
+
+  useEffect(() => {
+    if (!isMount.current) {console.log("changes made"); setChangesMade(true);}
+    else isMount.current = false;
+  }, [mealName, mealTime, foodsAdded])
+
   useEffect(() => {
     const fetchResults = async () => {
       if (debouncedFoodQuery.length > 2) {
@@ -79,7 +96,15 @@ const Add = ({ closePage, ref }: { closePage: () => void, ref: RefObject<HTMLDiv
 
   return (
     <Paper ref={ref} className={`w-screen fixed bottom-0 left-0 overflow-auto overflow-x-hidden ${isMobile ? "h-19/20" : "h-screen"}`} elevation={0} sx={{borderRadius: isMobile ? "16px 16px 0 0" : 0}}>
-      <Box className="w-full"><IconButton onClick={closePage} className="float-right" size="large"><Close /></IconButton></Box>
+      <Dialog open={closeDialog} onClose={() => setCloseDialog(false)}>
+        <DialogTitle>Unsaved changes</DialogTitle>
+        <DialogContent><DialogContentText>There are unsaved changes on this page. Are you sure you want to discard them?</DialogContentText></DialogContent>
+        <DialogActions>
+          <Button onClick={() => setCloseDialog(false)}>Cancel</Button>
+          <Button color="error" onClick={closePage}>Discard</Button>
+        </DialogActions>
+      </Dialog>
+      <Box className="w-full"><IconButton onClick={CloseButton} className="float-right" size="large"><Close /></IconButton></Box>
       <Box className={"w-screen flex-none flex flex-col items-center"}>
         <Box className="w-full max-w-7xl px-4 mb-16 flex flex-col gap-4">
           <Typography variant="h4" component={"h1"}>Add Meal</Typography>
