@@ -69,7 +69,7 @@ const Meals = () => {
           </TableBody>
         </Table>
       </TableContainer> :
-      <Box className="mt-12 mx-auto w-max"><Typography variant="h4" component={"p"}>You haven't logged any meals yet</Typography></Box>}
+      <Box className="mt-12"><Typography variant="h4" component={"p"} align="center">You haven't logged any meals yet</Typography></Box>}
     </>
   )
 }
