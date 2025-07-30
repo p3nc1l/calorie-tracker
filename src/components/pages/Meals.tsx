@@ -35,7 +35,7 @@ const Meals = () => {
                 </TableHead>
                 <TableBody>
                   {meal.foods.map((food) => 
-                  <TableRow>
+                  <TableRow key={food.name}>
                     <TableCell>{food.name}</TableCell>
                     <TableCell align="right">{food.calories}</TableCell>
                     <TableCell align="right">{food.fat}</TableCell>
@@ -65,7 +65,7 @@ const Meals = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {meals.map((meal) => <MealRow meal={meal} />)}
+            {meals.map((meal, index) => <MealRow key={index} meal={meal} />)}
           </TableBody>
         </Table>
       </TableContainer> :
