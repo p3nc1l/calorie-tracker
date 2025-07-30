@@ -1,4 +1,4 @@
-import { Box, TextField } from "@mui/material";
+import { Box, Skeleton, TextField, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useDebounce } from "@uidotdev/usehooks";
 import axios from "axios";
@@ -24,16 +24,20 @@ const searchFoods = async (query: string) => {
 const Foods = () => {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<[]>([]);
+  const [status, setStatus] = useState<"none" | "loading" | "display">("none");
 
-  const debouncedQuery = useDebounce(query, 1000);
+  const debouncedQuery = useDebounce(query, 500);
 
   useEffect(() => {
     const fetchResults = async () => {
       if (debouncedQuery.length > 2) {
+        setStatus("loading");
         const result = await searchFoods(debouncedQuery);
         setResults(result.foods.food || []);
+        setStatus("display");
       } else {
         setResults([]);
+        setStatus("none")
       }
     };
     fetchResults();
@@ -44,7 +48,7 @@ const Foods = () => {
       <Box className="mt-16 max-w-2xl mx-auto">
         <TextField fullWidth label="Search Foods" variant="outlined" value={query} onChange={(e) => setQuery(e.target.value)} />
       </Box>
-      {results.length > 0 && <TableContainer component={Paper} className="mt-8">
+      {status == "display" && results.length > 0 && <TableContainer component={Paper} className="mt-8">
         <Table>
           <TableHead>
             <TableRow>
@@ -64,6 +68,13 @@ const Foods = () => {
           </TableBody>
         </Table>
       </TableContainer>}
+      {status == "display" && results.length == 0 && <Box className="mt-4"><Typography align="center">No results matching your search term.</Typography></Box>}
+      {status == "loading" && 
+      <>
+        <Box className="h-8"></Box>
+        <Skeleton variant="rectangular" width={"100%"} height={56.36} />
+        {Array.from({ length: 20 }).map((_, index) => <Skeleton sx={{marginTop: "2.74px"}} key={index} variant="rectangular" width={"100%"} height={50} />)}
+      </>}
     </>
   )
 }
