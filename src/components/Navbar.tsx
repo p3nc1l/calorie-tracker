@@ -5,7 +5,7 @@ import FastfoodIcon from '@mui/icons-material/Fastfood';
 import { AccountCircle, AddBox, ListAlt } from '@mui/icons-material';
 import { isMobile } from 'react-device-detect';
 
-const Navbar = ({ page, setPage }: {page: number, setPage: (page: number) => void}) => {
+const Navbar = ({ page, setPage, setAddPage }: {page: number, setPage: (page: number) => void, setAddPage: (visibility: boolean) => void}) => {
   
 
   return (
@@ -14,8 +14,8 @@ const Navbar = ({ page, setPage }: {page: number, setPage: (page: number) => voi
         <BottomNavigationAction label={!isMobile ? "Home" : ""} icon={<HomeFilled />} />
         <BottomNavigationAction label={!isMobile ? "Foods" : ""} icon={<FastfoodIcon />} />
         {!isMobile ?
-         <Button variant='contained' className='flex-col'><AddBox /><div>Add</div></Button> :
-         <IconButton size='large'><AddBox fontSize='large'/></IconButton> }
+         <Button onClick={() => setAddPage(true)} variant='contained' className='flex-col'><AddBox /><div>Add</div></Button> :
+         <IconButton onClick={() => setAddPage(true)} size='large'><AddBox fontSize='large'/></IconButton> }
         <BottomNavigationAction label={!isMobile ? "Meals" : ""} icon={<ListAlt />} value={2}/>
         <BottomNavigationAction label={!isMobile ? "Profile" : ""} icon={<AccountCircle />} value={3}/>
       </BottomNavigation>
