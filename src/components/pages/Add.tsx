@@ -177,13 +177,13 @@ const Add = ({ closePage, ref }: { closePage: () => void, ref: RefObject<HTMLDiv
               </TableRow>) :
               <TableRow><TableCell colSpan={7}><Typography align="center">No foods added yet</Typography></TableCell></TableRow>)}
               {foodsAddedStatus == "loading" && <TableRow><TableCell colSpan={7}><Box className="w-max mx-auto"><CircularProgress /></Box></TableCell></TableRow>}
-              <TableRow>
+              {foodsAddedStatus == "display" && foodsAdded.length > 0 && <TableRow>
                 <TableCell colSpan={3} align="right">Total: </TableCell>
                 <TableCell align="right">{+foodsAdded.reduce((sum, food) => sum + food.calories * food.quantity, 0).toFixed(2)}</TableCell>
                 <TableCell align="right">{+foodsAdded.reduce((sum, food) => sum + food.fat * food.quantity, 0).toFixed(2)} g</TableCell>
                 <TableCell align="right">{+foodsAdded.reduce((sum, food) => sum + food.carbs * food.quantity, 0).toFixed(2)} g</TableCell>
                 <TableCell align="right">{+foodsAdded.reduce((sum, food) => sum + food.protein * food.quantity, 0).toFixed(2)} g</TableCell>
-              </TableRow>
+              </TableRow>}
             </TableBody>
           </Table>
           </TableContainer>
