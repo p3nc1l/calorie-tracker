@@ -146,8 +146,8 @@ const Add = ({ closePage, ref }: { closePage: () => void, ref: RefObject<HTMLDiv
           <Button color="error" onClick={closePage}>Discard</Button>
         </DialogActions>
       </Dialog>
-      <Box className="w-full"><IconButton onClick={CloseButton} className="float-right" size="large"><Close /></IconButton></Box>
-      <Box className={"w-screen flex-none flex flex-col items-center"}>
+      <Box className="w-full flex justify-end dragHandle"><IconButton onClick={CloseButton} size="large"><Close /></IconButton></Box>
+      <Box className={"w-screen flex-none flex flex-col items-center cancelDrag"}>
         <Box className="w-full max-w-7xl px-4 mb-16 flex flex-col gap-4">
           <Typography variant="h4" component={"h1"}>Add Meal</Typography>
           <TextField className="max-w-lg" fullWidth variant="outlined" margin="normal" label="Meal Name" value={mealName} onChange={(e) => setMealName(e.target.value)} />

@@ -5,12 +5,14 @@ import Profile from "./components/pages/Profile.tsx";
 import Navbar from "./components/Navbar"
 import Add from "./components/pages/Add.tsx";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Box, Backdrop } from "@mui/material";
 
 import { AnimatePresence, motion } from "motion/react";
 import PageLayout from "./components/pages/PageLayout.tsx";
 import { usePrevious } from "@uidotdev/usehooks";
+import Draggable from "react-draggable";
+import { isMobile } from "react-device-detect";
 
 interface Food {
   name: string,
@@ -35,6 +37,7 @@ function App() {
   const [page, setPage] = useState(0);
   const lastPage = usePrevious(page);
   const [addPage, setAddPage] = useState(false);
+  const nodeRef = useRef(null);
 
   return (
     <Box className={`w-screen h-screen overflow-x-hidden`}>
@@ -50,7 +53,24 @@ function App() {
       </motion.div>
       <Navbar page={page} setPage={(newPage) => setPage(newPage)} setAddPage={setAddPage} />
       <Backdrop open={addPage == true}></Backdrop>
-      <AnimatePresence>{addPage && <MotionAddPage initial={{y: "100vh"}} animate={{y: 0}} exit={{y: "100vh"}} transition={{type: "tween"}} closePage={() => setAddPage(false)} />}</AnimatePresence>
+      <AnimatePresence>
+        {addPage && 
+          <Draggable nodeRef={nodeRef} axis="y" disabled={!isMobile} bounds={{top: 0}} defaultPosition={{x: 0, y: 0}} cancel=".cancelDrag" handle=".dragHandle">
+            <div 
+              ref={nodeRef} 
+              className="fixed inset-0"
+            >
+              <MotionAddPage 
+                initial={{y: "100vh"}} 
+                animate={{y: 0}} 
+                exit={{y: "100vh"}} 
+                transition={{type: "tween"}} 
+                closePage={() => setAddPage(false)} 
+              />
+            </div>
+          </Draggable>
+        }
+      </AnimatePresence>
     </Box>
   )
 }
