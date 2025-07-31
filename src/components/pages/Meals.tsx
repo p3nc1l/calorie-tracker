@@ -27,6 +27,7 @@ const Meals = () => {
                 <TableHead>
                   <TableRow>
                     <TableCell>Name</TableCell>
+                    <TableCell align="right">Quantity</TableCell>
                     <TableCell align="right">Calories</TableCell>
                     <TableCell align="right">Fat</TableCell>
                     <TableCell align="right">Carbohydrates</TableCell>
@@ -37,6 +38,7 @@ const Meals = () => {
                   {meal.foods.map((food) => 
                   <TableRow>
                     <TableCell>{food.name}</TableCell>
+                    <TableCell align="right">{+food.quantity.toFixed(2)} {food.unit}</TableCell>
                     <TableCell align="right">{+(food.calories * food.quantity).toFixed(2)}</TableCell>
                     <TableCell align="right">{+(food.fat * food.quantity).toFixed(2)} g</TableCell>
                     <TableCell align="right">{+(food.carbs * food.quantity).toFixed(2)} g</TableCell>
