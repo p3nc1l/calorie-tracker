@@ -14,7 +14,7 @@ import { usePrevious } from "@uidotdev/usehooks";
 
 interface Food {
   name: string,
-  id: number,
+  id: number | null,
   quantity: number,
   unit: string,
   calories: number,

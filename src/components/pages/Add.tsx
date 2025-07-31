@@ -15,7 +15,7 @@ import { Remove } from "@mui/icons-material";
 
 interface Food {
   name: string,
-  id: number,
+  id: number | null,
   unit: string,
   quantity: number,
   calories: number,
@@ -98,7 +98,12 @@ const Add = ({ closePage, ref }: { closePage: () => void, ref: RefObject<HTMLDiv
     fetchResults();
   }, [debouncedFoodQuery])
 
-  async function AddFood(id: number) {
+  async function AddFood(id: number | null) {
+    if (id == null) {
+      setFoodsAdded(prevFoodsAdded => prevFoodsAdded.concat({ name: "", id: null, unit: "", quantity: 1, calories: 0, fat: 0, carbs: 0, protein: 0}))
+      return;
+    }
+    
     setFoodsAddedStatus("loading");
     const result = await getFood(id);
 
@@ -166,7 +171,7 @@ const Add = ({ closePage, ref }: { closePage: () => void, ref: RefObject<HTMLDiv
             <TableBody>
               {foodsAddedStatus == "display" && (foodsAdded.length > 0 ? 
               foodsAdded.map((food, index) => 
-              <TableRow>
+              (food.id != null ? <TableRow>
                 <TableCell padding="checkbox"><IconButton onClick={() => RemoveFood(index)}><Remove /></IconButton></TableCell>
                 <TableCell>{food.name}</TableCell>
                 <TableCell align="right"><TextField sx={{width: 100}} variant="standard" value={food.quantity} onChange={(e) => {const newFoodsAdded = [...foodsAdded]; newFoodsAdded[index].quantity = Number(e.target.value); setFoodsAdded(newFoodsAdded)}} slotProps={{input: {endAdornment: <InputAdornment position="end">{food.unit}</InputAdornment>}}}/></TableCell>
@@ -174,9 +179,21 @@ const Add = ({ closePage, ref }: { closePage: () => void, ref: RefObject<HTMLDiv
                 <TableCell align="right">{+(food.fat * food.quantity).toFixed(2)} g</TableCell>
                 <TableCell align="right">{+(food.carbs * food.quantity).toFixed(2)} g</TableCell>
                 <TableCell align="right">{+(food.protein * food.quantity).toFixed(2)} g</TableCell>
-              </TableRow>) :
+              </TableRow> : <TableRow>
+                <TableCell padding="checkbox"><IconButton onClick={() => RemoveFood(index)}><Remove /></IconButton></TableCell>
+                <TableCell><TextField variant="standard" value={food.name} onChange={(e) => setFoodsAdded(foodsAdded.map((v, i) => i === index ? { ...v, name: e.target.value } : v ))} /></TableCell>
+                <TableCell>
+                  <TextField className="w-4/10" sx={{marginRight: 1}} variant="standard" value={food.quantity} onChange={(e) => setFoodsAdded(foodsAdded.map((v, i) => i === index ? { ...v, quantity: +e.target.value } : v ))} />
+                  <TextField className="w-5/10" variant="standard" value={food.unit} onChange={(e) => setFoodsAdded(foodsAdded.map((v, i) => i === index ? { ...v, unit: e.target.value } : v ))} />
+                </TableCell>
+                <TableCell><TextField variant="standard" value={+(food.calories * food.quantity).toFixed(2)} onChange={(e) => setFoodsAdded(foodsAdded.map((v, i) => i === index ? { ...v, calories: +e.target.value / food.quantity } : v ))} /></TableCell>
+                <TableCell><TextField slotProps={{input: {endAdornment: <InputAdornment position="end">g</InputAdornment>}}} variant="standard" value={+(food.fat * food.quantity).toFixed(2)} onChange={(e) => setFoodsAdded(foodsAdded.map((v, i) => i === index ? { ...v, fat: +e.target.value / food.quantity } : v ))} /></TableCell>
+                <TableCell><TextField slotProps={{input: {endAdornment: <InputAdornment position="end">g</InputAdornment>}}} variant="standard" value={+(food.carbs * food.quantity).toFixed(2)} onChange={(e) => setFoodsAdded(foodsAdded.map((v, i) => i === index ? { ...v, carbs: +e.target.value / food.quantity } : v ))} /></TableCell>
+                <TableCell><TextField slotProps={{input: {endAdornment: <InputAdornment position="end">g</InputAdornment>}}} variant="standard" value={+(food.protein * food.quantity).toFixed(2)} onChange={(e) => setFoodsAdded(foodsAdded.map((v, i) => i === index ? { ...v, protein: +e.target.value / food.quantity } : v ))} /></TableCell>
+              </TableRow>)) :
               <TableRow><TableCell colSpan={7}><Typography align="center">No foods added yet</Typography></TableCell></TableRow>)}
               {foodsAddedStatus == "loading" && <TableRow><TableCell colSpan={7}><Box className="w-max mx-auto"><CircularProgress /></Box></TableCell></TableRow>}
+              <TableRow><TableCell colSpan={7} align="center"><Button onClick={() => AddFood(null)}><AddIcon />Add custom food</Button></TableCell></TableRow>
               {foodsAddedStatus == "display" && foodsAdded.length > 0 && <TableRow>
                 <TableCell colSpan={3} align="right">Total: </TableCell>
                 <TableCell align="right">{+foodsAdded.reduce((sum, food) => sum + food.calories * food.quantity, 0).toFixed(2)}</TableCell>
