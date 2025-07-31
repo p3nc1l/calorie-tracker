@@ -94,9 +94,17 @@ const Add = ({ closePage, ref }: { closePage: () => void, ref: RefObject<HTMLDiv
 
   async function AddFood(id: number) {
     const result = await getFood(id);
+
     const food = result.food;
     const serving = result.food.servings.serving.calories != null ? result.food.servings.serving : result.food.servings.serving[0];
     const num = +serving.number_of_units;
+
+    const exists = foodsAdded.findIndex((food) => food.id = id);
+
+    if (exists != -1) {
+      setFoodsAdded(prevFoodsAdded => prevFoodsAdded.map((value, i) => i === exists ? { ...value, quantity: value.quantity + num } : value));
+      return;
+    }
 
     setFoodsAdded(prevFoodsAdded => prevFoodsAdded.concat({ name: food.food_name, id: id, unit: serving.measurement_description, quantity: num, calories: serving.calories / num, fat: serving.fat / num, carbs: serving.carbohydrate / num, protein: serving.protein / num }));
   }
