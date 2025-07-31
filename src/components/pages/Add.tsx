@@ -106,7 +106,7 @@ const Add = ({ closePage, ref }: { closePage: () => void, ref: RefObject<HTMLDiv
     const serving = result.food.servings.serving.calories != null ? result.food.servings.serving : result.food.servings.serving[0];
     const num = +serving.number_of_units;
 
-    const exists = foodsAdded.findIndex((food) => food.id = id);
+    const exists = foodsAdded.findIndex((food) => food.id == id);
 
     if (exists != -1) setFoodsAdded(prevFoodsAdded => prevFoodsAdded.map((value, i) => i === exists ? { ...value, quantity: value.quantity + num } : value));
     else setFoodsAdded(prevFoodsAdded => prevFoodsAdded.concat({ name: food.food_name, id: id, unit: serving.measurement_description, quantity: num, calories: serving.calories / num, fat: serving.fat / num, carbs: serving.carbohydrate / num, protein: serving.protein / num }));
@@ -177,6 +177,13 @@ const Add = ({ closePage, ref }: { closePage: () => void, ref: RefObject<HTMLDiv
               </TableRow>) :
               <TableRow><TableCell colSpan={7}><Typography align="center">No foods added yet</Typography></TableCell></TableRow>)}
               {foodsAddedStatus == "loading" && <TableRow><TableCell colSpan={7}><Box className="w-max mx-auto"><CircularProgress /></Box></TableCell></TableRow>}
+              <TableRow>
+                <TableCell colSpan={3} align="right">Total: </TableCell>
+                <TableCell align="right">{+foodsAdded.reduce((sum, food) => sum + food.calories * food.quantity, 0).toFixed(2)}</TableCell>
+                <TableCell align="right">{+foodsAdded.reduce((sum, food) => sum + food.fat * food.quantity, 0).toFixed(2)} g</TableCell>
+                <TableCell align="right">{+foodsAdded.reduce((sum, food) => sum + food.carbs * food.quantity, 0).toFixed(2)} g</TableCell>
+                <TableCell align="right">{+foodsAdded.reduce((sum, food) => sum + food.protein * food.quantity, 0).toFixed(2)} g</TableCell>
+              </TableRow>
             </TableBody>
           </Table>
           </TableContainer>
