@@ -1,4 +1,4 @@
-import { Paper, Box, IconButton, Typography, TextField, Table, TableHead, TableBody, TableRow, TableCell, TableContainer, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Button } from "@mui/material"
+import { Paper, Box, IconButton, Typography, TextField, Table, TableHead, TableBody, TableRow, TableCell, TableContainer, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Button, InputAdornment } from "@mui/material"
 import { Close } from "@mui/icons-material"
 import type { RefObject } from "react"
 import { useEffect, useState, useRef } from "react";
@@ -11,6 +11,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
 import axios from "axios";
 import AddIcon from '@mui/icons-material/Add';
+import { Remove } from "@mui/icons-material";
 
 interface Food {
   name: string,
@@ -73,7 +74,7 @@ const Add = ({ closePage, ref }: { closePage: () => void, ref: RefObject<HTMLDiv
   useEffect(() => {isMount.current = true}, []);
 
   useEffect(() => {
-    if (!isMount.current) {console.log("changes made"); setChangesMade(true);}
+    if (!isMount.current) setChangesMade(true);
     else isMount.current = false;
   }, [mealName, mealTime, foodsAdded])
 
@@ -91,7 +92,17 @@ const Add = ({ closePage, ref }: { closePage: () => void, ref: RefObject<HTMLDiv
 
   async function AddFood(id: number) {
     const result = await getFood(id);
-    setFoodsAdded(foodsAdded.concat({ name: result.food.food_name, id: id, unit: result.food.servings.serving.serving_description, quantity: 1, calories: result.food.servings.serving.calories, fat: result.food.servings.serving.fat, carbs: result.food.servings.serving.carbohydrate, protein: result.food.servings.serving.protein }));
+    const food = result.food;
+    const serving = result.food.servings.serving.calories != null ? result.food.servings.serving : result.food.servings.serving[0];
+    const num = +serving.number_of_units;
+
+    setFoodsAdded(prevFoodsAdded => prevFoodsAdded.concat({ name: food.food_name, id: id, unit: serving.measurement_description, quantity: num, calories: serving.calories / num, fat: serving.fat / num, carbs: serving.carbohydrate / num, protein: serving.protein / num }));
+  }
+
+  function RemoveFood(index: number) {
+    const newFoodsAdded = [...foodsAdded];
+    newFoodsAdded.splice(index, 1);
+    setFoodsAdded(newFoodsAdded);
   }
 
   return (
@@ -115,10 +126,10 @@ const Add = ({ closePage, ref }: { closePage: () => void, ref: RefObject<HTMLDiv
           <TableContainer component={Box} className="border rounded-sm border-gray-300 max-w-3xl">
             <Table>
             <TableHead>
-              <Box className="p-2"><Typography>Foods Added</Typography></Box>
+              <TableRow><TableCell sx={{borderBottom: "none"}} colSpan={7}><Typography>Foods Added</Typography></TableCell></TableRow>
               <TableRow>
+                <TableCell padding="checkbox" />
                 <TableCell>Name</TableCell>
-                <TableCell>Unit</TableCell>
                 <TableCell align="right">Qty</TableCell>
                 <TableCell align="right">Calories</TableCell>
                 <TableCell align="right">Fat</TableCell>
@@ -130,13 +141,13 @@ const Add = ({ closePage, ref }: { closePage: () => void, ref: RefObject<HTMLDiv
               {foodsAdded.length > 0 ? 
               foodsAdded.map((food, index) => 
               <TableRow>
+                <TableCell padding="checkbox"><IconButton onClick={() => RemoveFood(index)}><Remove /></IconButton></TableCell>
                 <TableCell>{food.name}</TableCell>
-                <TableCell>{food.unit}</TableCell>
-                <TableCell align="right"><TextField fullWidth variant="standard" value={food.quantity} onChange={(e) => {const newFoodsAdded = [...foodsAdded]; newFoodsAdded[index].quantity = Number(e.target.value); setFoodsAdded(newFoodsAdded)}} /></TableCell>
-                <TableCell align="right">{food.calories * food.quantity}</TableCell>
-                <TableCell align="right">{food.fat * food.quantity}</TableCell>
-                <TableCell align="right">{food.carbs * food.quantity}</TableCell>
-                <TableCell align="right">{food.protein * food.quantity}</TableCell>
+                <TableCell align="right"><TextField sx={{width: 100}} variant="standard" value={food.quantity} onChange={(e) => {const newFoodsAdded = [...foodsAdded]; newFoodsAdded[index].quantity = Number(e.target.value); setFoodsAdded(newFoodsAdded)}} slotProps={{input: {endAdornment: <InputAdornment position="end">{food.unit}</InputAdornment>}}}/></TableCell>
+                <TableCell align="right">{+(food.calories * food.quantity).toFixed(2)}</TableCell>
+                <TableCell align="right">{+(food.fat * food.quantity).toFixed(2)} g</TableCell>
+                <TableCell align="right">{+(food.carbs * food.quantity).toFixed(2)} g</TableCell>
+                <TableCell align="right">{+(food.protein * food.quantity).toFixed(2)} g</TableCell>
               </TableRow>) :
               <TableRow><TableCell colSpan={7}><Typography align="center">No foods added yet</Typography></TableCell></TableRow>}
             </TableBody>
