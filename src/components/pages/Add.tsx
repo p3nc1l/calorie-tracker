@@ -46,7 +46,7 @@ const getFood = async (id: number) => {
   }
 }
 
-const Add = ({ closePage, ref }: { closePage: () => void, ref: RefObject<HTMLDivElement>}) => {
+const Add = ({ closePage, ref }: { closePage: () => void, ref: RefObject<HTMLDivElement> }) => {
   const [currentMeals] = useLocalStorage<Meal[]>("meals", []);
   const mealsToday = currentMeals.filter((meal) => new Date(meal.timestamp).toLocaleDateString() == new Date().toLocaleDateString()).length;
   
@@ -65,6 +65,8 @@ const Add = ({ closePage, ref }: { closePage: () => void, ref: RefObject<HTMLDiv
   const [changesMade, setChangesMade] = useState(false);
 
   const [closeDialog, setCloseDialog] = useState(false);
+
+  const [meals, setMeals] = useLocalStorage<Meal[]>("meals", []);
 
   function CloseButton() {
     if (!changesMade) closePage();
@@ -103,6 +105,17 @@ const Add = ({ closePage, ref }: { closePage: () => void, ref: RefObject<HTMLDiv
     const newFoodsAdded = [...foodsAdded];
     newFoodsAdded.splice(index, 1);
     setFoodsAdded(newFoodsAdded);
+  }
+
+  function SaveMeal() {
+    const newMeals = [...meals];
+    const foods: Meal["foods"] = [];
+    foodsAdded.map((foodAdded) => {
+      foods.push({ name: foodAdded.name, id: foodAdded.id, calories: foodAdded.calories, quantity: foodAdded.quantity, unit: foodAdded.unit, fat: foodAdded.fat, carbs: foodAdded.carbs, protein: foodAdded.protein })
+    })
+    newMeals.push({ name: mealName, timestamp: mealTime, foods: foods });
+    setMeals(newMeals);
+    closePage();
   }
 
   return (
@@ -175,6 +188,7 @@ const Add = ({ closePage, ref }: { closePage: () => void, ref: RefObject<HTMLDiv
               </TableBody>
             </Table>
           </TableContainer>
+          <Box><Button variant="contained" disabled={foodsAdded.length == 0 || mealName == ""} onClick={SaveMeal}>Save</Button></Box>
         </Box>
       </Box>
     </Paper>
