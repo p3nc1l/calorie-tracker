@@ -1,4 +1,4 @@
-import { Paper, Box, IconButton, Typography, TextField, Table, TableHead, TableBody, TableRow, TableCell, TableContainer, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Button, InputAdornment } from "@mui/material"
+import { Paper, Box, IconButton, Typography, TextField, Table, TableHead, TableBody, TableRow, TableCell, TableContainer, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Button, InputAdornment, Skeleton, CircularProgress } from "@mui/material"
 import { Close } from "@mui/icons-material"
 import type { RefObject } from "react"
 import { useEffect, useState, useRef } from "react";
@@ -59,6 +59,9 @@ const Add = ({ closePage, ref }: { closePage: () => void, ref: RefObject<HTMLDiv
   const [foodQuery, setFoodQuery] = useState("");
   const [foodResults, setFoodResults] = useState([]);
 
+  const [foodSearchStatus, setFoodSearchStatus] = useState<"none" | "loading" | "display">("none");
+  const [foodsAddedStatus, setFoodsAddedStatus] = useState<"loading" | "display">("display");
+
   const debouncedFoodQuery = useDebounce(foodQuery, 500);
 
   const isMount = useRef(false);
@@ -83,16 +86,20 @@ const Add = ({ closePage, ref }: { closePage: () => void, ref: RefObject<HTMLDiv
   useEffect(() => {
     const fetchResults = async () => {
       if (debouncedFoodQuery.length > 2) {
+        setFoodSearchStatus("loading");
         const result = await searchFoods(debouncedFoodQuery);
         setFoodResults(result.foods.food || []);
+        setFoodSearchStatus("display");
       } else {
         setFoodResults([]);
+        setFoodSearchStatus("none");
       }
     };
     fetchResults();
   }, [debouncedFoodQuery])
 
   async function AddFood(id: number) {
+    setFoodsAddedStatus("loading");
     const result = await getFood(id);
 
     const food = result.food;
@@ -101,12 +108,10 @@ const Add = ({ closePage, ref }: { closePage: () => void, ref: RefObject<HTMLDiv
 
     const exists = foodsAdded.findIndex((food) => food.id = id);
 
-    if (exists != -1) {
-      setFoodsAdded(prevFoodsAdded => prevFoodsAdded.map((value, i) => i === exists ? { ...value, quantity: value.quantity + num } : value));
-      return;
-    }
+    if (exists != -1) setFoodsAdded(prevFoodsAdded => prevFoodsAdded.map((value, i) => i === exists ? { ...value, quantity: value.quantity + num } : value));
+    else setFoodsAdded(prevFoodsAdded => prevFoodsAdded.concat({ name: food.food_name, id: id, unit: serving.measurement_description, quantity: num, calories: serving.calories / num, fat: serving.fat / num, carbs: serving.carbohydrate / num, protein: serving.protein / num }));
 
-    setFoodsAdded(prevFoodsAdded => prevFoodsAdded.concat({ name: food.food_name, id: id, unit: serving.measurement_description, quantity: num, calories: serving.calories / num, fat: serving.fat / num, carbs: serving.carbohydrate / num, protein: serving.protein / num }));
+    setFoodsAddedStatus("display");
   }
 
   function RemoveFood(index: number) {
@@ -159,7 +164,7 @@ const Add = ({ closePage, ref }: { closePage: () => void, ref: RefObject<HTMLDiv
               </TableRow>
             </TableHead>
             <TableBody>
-              {foodsAdded.length > 0 ? 
+              {foodsAddedStatus == "display" && (foodsAdded.length > 0 ? 
               foodsAdded.map((food, index) => 
               <TableRow>
                 <TableCell padding="checkbox"><IconButton onClick={() => RemoveFood(index)}><Remove /></IconButton></TableCell>
@@ -170,7 +175,8 @@ const Add = ({ closePage, ref }: { closePage: () => void, ref: RefObject<HTMLDiv
                 <TableCell align="right">{+(food.carbs * food.quantity).toFixed(2)} g</TableCell>
                 <TableCell align="right">{+(food.protein * food.quantity).toFixed(2)} g</TableCell>
               </TableRow>) :
-              <TableRow><TableCell colSpan={7}><Typography align="center">No foods added yet</Typography></TableCell></TableRow>}
+              <TableRow><TableCell colSpan={7}><Typography align="center">No foods added yet</Typography></TableCell></TableRow>)}
+              {foodsAddedStatus == "loading" && <TableRow><TableCell colSpan={7}><Box className="w-max mx-auto"><CircularProgress /></Box></TableCell></TableRow>}
             </TableBody>
           </Table>
           </TableContainer>
@@ -186,12 +192,19 @@ const Add = ({ closePage, ref }: { closePage: () => void, ref: RefObject<HTMLDiv
                 </TableRow>
               </TableHead>
               <TableBody>
-                {foodResults.map((food: { food_name: string, food_id:number , food_description: string, brand_name?: string }) => 
+                {foodSearchStatus == "display" && foodResults.map((food: { food_name: string, food_id:number , food_description: string, brand_name?: string }) => 
                 <TableRow>
                   <TableCell padding="checkbox"><IconButton onClick={() => AddFood(food.food_id)}><AddIcon /></IconButton></TableCell>
                   <TableCell>{food.food_name}</TableCell>
                   <TableCell>{food.brand_name || "Non-branded"}</TableCell>
                   <TableCell>{food.food_description}</TableCell>
+                </TableRow>)}
+                {foodSearchStatus == "loading" &&
+                Array.from({ length: 5 }).map(() => <TableRow>
+                  <TableCell></TableCell>
+                  <TableCell><Skeleton width={"100%"} /></TableCell>
+                  <TableCell><Skeleton width={"100%"} /></TableCell>
+                  <TableCell><Skeleton width={"100%"} /><Skeleton width={"100%"} /><Skeleton width={"100%"} /></TableCell>
                 </TableRow>)}
               </TableBody>
             </Table>
