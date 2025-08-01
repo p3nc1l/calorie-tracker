@@ -1,4 +1,4 @@
-import { TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Paper, Typography, Box, Collapse, IconButton } from "@mui/material";
+import { TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Paper, Typography, Box, Collapse, IconButton, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Button } from "@mui/material";
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import { useLocalStorage } from "@uidotdev/usehooks";
@@ -6,9 +6,33 @@ import type { Meal } from "../../App";
 import { useState } from "react";
 
 const Meals = () => {
-  const [meals] = useLocalStorage<Meal[]>("meals", []);
+  const [meals, setMeals] = useLocalStorage<Meal[]>("meals", []);
+  const [deleteDialog, setDeleteDialog] = useState<number | null>(null);
 
-  function MealRow({ meal }: { meal: Meal }) {
+  function DeleteMeal(index: number) {
+    setMeals(prevMeals => prevMeals.toSpliced(index, 1));
+  }
+
+  function DeleteDialog() {
+    if (deleteDialog == null) return;
+
+    function closeDialog() {
+      setDeleteDialog(null);
+    }
+
+    return (
+      <Dialog open={deleteDialog != null} onClose={closeDialog}>
+        <DialogTitle>Remove Meal</DialogTitle>
+        <DialogContent><DialogContentText>Are you sure you want to delete "{meals[deleteDialog].name}"?</DialogContentText></DialogContent>
+        <DialogActions>
+          <Button onClick={closeDialog}>Cancel</Button>
+          <Button color="error" onClick={() => {DeleteMeal(deleteDialog); closeDialog()}}>Delete</Button>
+        </DialogActions>
+      </Dialog>
+    )
+  }
+
+  function MealRow({ meal, index }: { meal: Meal, index: number }) {
     const [open, setOpen] = useState(false);
 
     return (
@@ -47,6 +71,7 @@ const Meals = () => {
                   )}
                 </TableBody>
               </Table>
+              <Box className="flex flex-row-reverse gap-2 p-2"><Box className="w-max"><Button variant="contained" color="error" onClick={() => setDeleteDialog(index)}>Delete</Button></Box></Box>
             </Collapse>
           </TableCell>
         </TableRow>
@@ -56,6 +81,7 @@ const Meals = () => {
 
   return (
     <>
+      <DeleteDialog />
       {meals.length > 0 ? <TableContainer component={Paper} className="mt-8 max-w-2xl mx-auto">
         <Table>
           <TableHead>
@@ -67,7 +93,7 @@ const Meals = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {meals.map((meal, index) => <MealRow key={index} meal={meal} />)}
+            {meals.map((meal, index) => <MealRow index={index} key={index} meal={meal} />)}
           </TableBody>
         </Table>
       </TableContainer> :
