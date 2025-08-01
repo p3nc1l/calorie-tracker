@@ -17,7 +17,7 @@ const Meals = () => {
           <TableCell padding="checkbox"><IconButton onClick={() => setOpen(!open)}>{open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}</IconButton></TableCell>
           <TableCell>{meal.name}</TableCell>
           <TableCell>{new Date(meal.timestamp).toLocaleString()}</TableCell>
-          <TableCell align="right">{meal.foods.reduce((sum, food) => sum + food.calories, 0)}</TableCell>
+          <TableCell align="right">{meal.foods.reduce((sum, food) => sum + food.calories * food.quantity, 0)}</TableCell>
         </TableRow>
         <TableRow>
           <TableCell sx={{paddingBlock: 0}} colSpan={4}>
@@ -27,6 +27,7 @@ const Meals = () => {
                 <TableHead>
                   <TableRow>
                     <TableCell>Name</TableCell>
+                    <TableCell align="right">Quantity</TableCell>
                     <TableCell align="right">Calories</TableCell>
                     <TableCell align="right">Fat</TableCell>
                     <TableCell align="right">Carbohydrates</TableCell>
@@ -37,10 +38,11 @@ const Meals = () => {
                   {meal.foods.map((food) => 
                   <TableRow key={food.name}>
                     <TableCell>{food.name}</TableCell>
-                    <TableCell align="right">{food.calories}</TableCell>
-                    <TableCell align="right">{food.fat}</TableCell>
-                    <TableCell align="right">{food.carbs}</TableCell>
-                    <TableCell align="right">{food.protein}</TableCell>
+                    <TableCell align="right">{+food.quantity.toFixed(2)} {food.unit}</TableCell>
+                    <TableCell align="right">{+(food.calories * food.quantity).toFixed(2)}</TableCell>
+                    <TableCell align="right">{+(food.fat * food.quantity).toFixed(2)} g</TableCell>
+                    <TableCell align="right">{+(food.carbs * food.quantity).toFixed(2)} g</TableCell>
+                    <TableCell align="right">{+(food.protein * food.quantity).toFixed(2)} g</TableCell>
                   </TableRow>
                   )}
                 </TableBody>

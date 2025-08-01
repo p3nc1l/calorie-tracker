@@ -3,18 +3,21 @@ import Foods from "./components/pages/Foods.tsx";
 import Meals from "./components/pages/Meals.tsx";
 import Profile from "./components/pages/Profile.tsx";
 import Navbar from "./components/Navbar"
+import Add from "./components/pages/Add.tsx";
 
 import { useState } from "react";
 import { Box } from "@mui/material";
 
-import { motion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import PageLayout from "./components/pages/PageLayout.tsx";
 import { usePrevious } from "@uidotdev/usehooks";
+import { isMobile } from "react-device-detect";
 
 interface Food {
   name: string,
-  id: number,
-  brand: string | null,
+  id: number | null,
+  quantity: number,
+  unit: string,
   calories: number,
   fat: number,
   carbs: number,
@@ -30,9 +33,10 @@ export interface Meal {
 function App() {
   const [page, setPage] = useState(0);
   const lastPage = usePrevious(page);
+  const [addPage, setAddPage] = useState(false);
 
   return (
-    <Box className="relative w-screen h-screen overflow-x-hidden">
+    <Box className={`w-screen h-screen overflow-x-hidden`}>
       <motion.div 
         initial={{x: `calc(-100vw * ${lastPage})`}} 
         animate={{x: `calc(-100vw * ${page})`}} 
@@ -43,7 +47,8 @@ function App() {
         <PageLayout active={page == 2 ? true : false}><Meals /></PageLayout>
         <Profile />
       </motion.div>
-      <Navbar page={page} setPage={(newPage) => setPage(newPage)}/>
+      <Navbar page={page} setPage={(newPage) => setPage(newPage)} setAddPage={setAddPage} />
+      <AnimatePresence>{addPage && <Add closePage={() => setAddPage(false)} variant={isMobile ? "mobile" : "desktop"} />}</AnimatePresence>
     </Box>
   )
 }
