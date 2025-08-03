@@ -50,6 +50,23 @@ const MealEditor = ({ closePage, mobile = false }: { closePage: () => void, mobi
   const constraintsRef = useRef<HTMLDivElement>(null);
   const pageRef = useRef<HTMLDivElement>(null);
   const windowSize = useWindowSize();
+  const [constraintsHeight, setConstraintsHeight] = useState(0);
+
+  useEffect(() => {
+    const updateHeight = () => {
+      if (constraintsRef.current) {
+        const newHeight = constraintsRef.current.getBoundingClientRect().height;
+        setConstraintsHeight(newHeight);
+      }
+    }
+
+    updateHeight();
+
+    const resizeObserver = new ResizeObserver(updateHeight);
+    if (constraintsRef.current) {
+      resizeObserver.observe(constraintsRef.current);
+    }
+  }, []);
 
   function AddContent() {
     const [currentMeals] = useLocalStorage<Meal[]>("meals", []);
@@ -264,7 +281,7 @@ const MealEditor = ({ closePage, mobile = false }: { closePage: () => void, mobi
         initial={{y: "100vh"}}
         animate={{y: 1}}
         drag={"y"}
-        dragConstraints={{top: ((windowSize.height || 0) - (constraintsRef.current?.getBoundingClientRect().height || 0)), bottom: 0}}
+        dragConstraints={{top: ((windowSize.height || 0) - constraintsHeight), bottom: 0}}
         dragElastic={{top: 0.0001, bottom: 1}}
         ref={pageRef}
         onDragEnd={() => (pageRef.current?.getBoundingClientRect().y || 0) > 400 && closePage()}
