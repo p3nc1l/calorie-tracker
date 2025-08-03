@@ -1,7 +1,7 @@
 import { Paper, Box, IconButton, Typography, TextField, Table, TableHead, TableBody, TableRow, TableCell, TableContainer, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Button, InputAdornment, Skeleton, CircularProgress, Backdrop } from "@mui/material"
 import { Close } from "@mui/icons-material"
 import { useEffect, useState, useRef } from "react";
-import { useDebounce, useLocalStorage, useWindowSize } from "@uidotdev/usehooks";
+import { useDebounce, useWindowSize } from "@uidotdev/usehooks";
 import type { Meal } from "../../App";
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -45,117 +45,71 @@ const getFood = async (id: number) => {
   }
 }
 
-const MealEditor = ({ closePage, mobile = false }: { closePage: () => void, mobile: boolean }) => {
+const MealEditor = ({ closePage, mobile = false, mealIndex }: { closePage: () => void, mobile: boolean, mealIndex?: number }) => {
   const [closeDialog, setCloseDialog] = useState(false);
   const constraintsRef = useRef<HTMLDivElement>(null);
   const pageRef = useRef<HTMLDivElement>(null);
   const windowSize = useWindowSize();
   const [constraintsHeight, setConstraintsHeight] = useState(0);
+  const [changesMade, setChangesMade] = useState(false);
+  const isLoaded = useRef(false);
+  const isMount = useRef(true);
 
-  useEffect(() => {
-    const updateHeight = () => {
-      if (constraintsRef.current) {
-        const newHeight = constraintsRef.current.getBoundingClientRect().height;
-        setConstraintsHeight(newHeight);
-      }
+  const [meals] = useState<Meal[]>(JSON.parse(localStorage.getItem("meals") || "[]"));
+  const [mealName, setMealName] = useState("");
+  const [mealTime, setMealTime] = useState(Date.now());
+  const [foodsAdded, setFoodsAdded] = useState<Food[]>([]);
+
+  const [foodQuery, setFoodQuery] = useState("");
+  const debouncedFoodQuery = useDebounce(foodQuery, 500);
+  const [foodResults, setFoodResults] = useState([]);
+  const [foodSearchStatus, setFoodSearchStatus] = useState<"none" | "loading" | "display">("none");
+  const [foodsAddedStatus, setFoodsAddedStatus] = useState<"loading" | "display">("display");
+
+  //
+  //Function Declarations
+  //
+  const CloseButton = () => {
+    if (!changesMade) closePage();
+    else setCloseDialog(true);
+  }
+
+  const RemoveFood = (index: number) => setFoodsAdded(prevFoodsAdded => prevFoodsAdded.toSpliced(index, 1));
+
+  const SaveMeal = () => {
+    const foods = foodsAdded.map((foodAdded) => { 
+      return { name: foodAdded.name, id: foodAdded.id, calories: foodAdded.calories, quantity: foodAdded.quantity, unit: foodAdded.unit, fat: foodAdded.fat, carbs: foodAdded.carbs, protein: foodAdded.protein }
+    })
+    const newMeal: Meal = { name: mealName, timestamp: mealTime, foods: foods };
+    localStorage.setItem("meals", JSON.stringify(meals.concat(newMeal)));
+    closePage();
+  }
+
+  const AddFood = async (id: number | null) => {
+    if (id == null) {
+      setFoodsAdded(prevFoodsAdded => prevFoodsAdded.concat({ name: "", id: null, unit: "", quantity: 1, calories: 0, fat: 0, carbs: 0, protein: 0}))
+      return;
     }
-
-    updateHeight();
-
-    const resizeObserver = new ResizeObserver(updateHeight);
-    if (constraintsRef.current) {
-      resizeObserver.observe(constraintsRef.current);
-    }
-  }, []);
-
-  function AddContent() {
-    const [currentMeals] = useLocalStorage<Meal[]>("meals", []);
-    const mealsToday = currentMeals.filter((meal) => new Date(meal.timestamp).toLocaleDateString() == new Date().toLocaleDateString()).length;
     
-    const [mealName, setMealName] = useState(`Meal #${mealsToday + 1} on ${new Date().toLocaleDateString()}`);
+    setFoodsAddedStatus("loading");
+    const result = await getFood(id);
 
-    const [mealTime, setMealTime] = useState(Date.now());
+    const food = result.food;
+    const serving = result.food.servings.serving.calories != null ? result.food.servings.serving : result.food.servings.serving[0];
+    const num = +serving.number_of_units;
 
-    const [foodsAdded, setFoodsAdded] = useState<Food[]>([]);
+    const exists = foodsAdded.findIndex((food) => food.id == id);
 
-    const [foodQuery, setFoodQuery] = useState("");
-    const [foodResults, setFoodResults] = useState([]);
+    if (exists != -1) setFoodsAdded(prevFoodsAdded => prevFoodsAdded.map((value, i) => i === exists ? { ...value, quantity: value.quantity + num } : value));
+    else setFoodsAdded(prevFoodsAdded => prevFoodsAdded.concat({ name: food.food_name, id: id, unit: serving.measurement_description, quantity: num, calories: serving.calories / num, fat: serving.fat / num, carbs: serving.carbohydrate / num, protein: serving.protein / num }));
 
-    const [foodSearchStatus, setFoodSearchStatus] = useState<"none" | "loading" | "display">("none");
-    const [foodsAddedStatus, setFoodsAddedStatus] = useState<"loading" | "display">("display");
+    setFoodsAddedStatus("display");
+  }
 
-    const debouncedFoodQuery = useDebounce(foodQuery, 500);
-
-    const isMount = useRef(false);
-    const [changesMade, setChangesMade] = useState(false);
-
-    const [meals, setMeals] = useLocalStorage<Meal[]>("meals", []);
-
-    function CloseButton() {
-      if (!changesMade) closePage();
-      else setCloseDialog(true);
-    }
-
-    useEffect(() => {isMount.current = true}, []);
-
-    useEffect(() => {
-      if (!isMount.current) setChangesMade(true);
-      else isMount.current = false;
-    }, [mealName, mealTime, foodsAdded])
-
-    useEffect(() => {
-      const fetchResults = async () => {
-        if (debouncedFoodQuery.length > 2) {
-          setFoodSearchStatus("loading");
-          const result = await searchFoods(debouncedFoodQuery);
-          setFoodResults(result.foods.food || []);
-          setFoodSearchStatus("display");
-        } else {
-          setFoodResults([]);
-          setFoodSearchStatus("none");
-        }
-      };
-      fetchResults();
-    }, [debouncedFoodQuery])
-
-    async function AddFood(id: number | null) {
-      if (id == null) {
-        setFoodsAdded(prevFoodsAdded => prevFoodsAdded.concat({ name: "", id: null, unit: "", quantity: 1, calories: 0, fat: 0, carbs: 0, protein: 0}))
-        return;
-      }
-      
-      setFoodsAddedStatus("loading");
-      const result = await getFood(id);
-
-      const food = result.food;
-      const serving = result.food.servings.serving.calories != null ? result.food.servings.serving : result.food.servings.serving[0];
-      const num = +serving.number_of_units;
-
-      const exists = foodsAdded.findIndex((food) => food.id == id);
-
-      if (exists != -1) setFoodsAdded(prevFoodsAdded => prevFoodsAdded.map((value, i) => i === exists ? { ...value, quantity: value.quantity + num } : value));
-      else setFoodsAdded(prevFoodsAdded => prevFoodsAdded.concat({ name: food.food_name, id: id, unit: serving.measurement_description, quantity: num, calories: serving.calories / num, fat: serving.fat / num, carbs: serving.carbohydrate / num, protein: serving.protein / num }));
-
-      setFoodsAddedStatus("display");
-    }
-
-    function RemoveFood(index: number) {
-      const newFoodsAdded = [...foodsAdded];
-      newFoodsAdded.splice(index, 1);
-      setFoodsAdded(newFoodsAdded);
-    }
-
-    function SaveMeal() {
-      const newMeals = [...meals];
-      const foods: Meal["foods"] = [];
-      foodsAdded.map((foodAdded) => {
-        foods.push({ name: foodAdded.name, id: foodAdded.id, calories: foodAdded.calories, quantity: foodAdded.quantity, unit: foodAdded.unit, fat: foodAdded.fat, carbs: foodAdded.carbs, protein: foodAdded.protein })
-      })
-      newMeals.push({ name: mealName, timestamp: mealTime, foods: foods });
-      setMeals(newMeals);
-      closePage();
-    }
-
+  //
+  // Components
+  //
+  const AddContent = () => {
     return (
       <>
         <Box className="w-full flex justify-end"><IconButton onClick={CloseButton} size="large"><Close /></IconButton></Box>
@@ -183,7 +137,7 @@ const MealEditor = ({ closePage, mobile = false }: { closePage: () => void, mobi
               <TableBody>
                 {foodsAddedStatus == "display" && (foodsAdded.length > 0 ? 
                 foodsAdded.map((food, index) => 
-                (food.id != null ? <TableRow>
+                (food.id != null ? <TableRow key={index}>
                   <TableCell padding="checkbox"><IconButton onClick={() => RemoveFood(index)}><Remove /></IconButton></TableCell>
                   <TableCell>{food.name}</TableCell>
                   <TableCell align="right"><TextField sx={{width: 100}} variant="standard" value={food.quantity} onChange={(e) => {const newFoodsAdded = [...foodsAdded]; newFoodsAdded[index].quantity = Number(e.target.value); setFoodsAdded(newFoodsAdded)}} slotProps={{input: {endAdornment: <InputAdornment position="end">{food.unit}</InputAdornment>}}}/></TableCell>
@@ -191,7 +145,7 @@ const MealEditor = ({ closePage, mobile = false }: { closePage: () => void, mobi
                   <TableCell align="right">{+(food.fat * food.quantity).toFixed(2)} g</TableCell>
                   <TableCell align="right">{+(food.carbs * food.quantity).toFixed(2)} g</TableCell>
                   <TableCell align="right">{+(food.protein * food.quantity).toFixed(2)} g</TableCell>
-                </TableRow> : <TableRow>
+                </TableRow> : <TableRow key={index}>
                   <TableCell padding="checkbox"><IconButton onClick={() => RemoveFood(index)}><Remove /></IconButton></TableCell>
                   <TableCell><TextField variant="standard" value={food.name} onChange={(e) => setFoodsAdded(foodsAdded.map((v, i) => i === index ? { ...v, name: e.target.value } : v ))} /></TableCell>
                   <TableCell>
@@ -228,15 +182,15 @@ const MealEditor = ({ closePage, mobile = false }: { closePage: () => void, mobi
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {foodSearchStatus == "display" && foodResults.map((food: { food_name: string, food_id:number , food_description: string, brand_name?: string }) => 
-                  <TableRow>
+                  {foodSearchStatus == "display" && foodResults.map((food: { food_name: string, food_id:number , food_description: string, brand_name?: string }, index) => 
+                  <TableRow key={index}>
                     <TableCell padding="checkbox"><IconButton onClick={() => AddFood(food.food_id)}><AddIcon /></IconButton></TableCell>
                     <TableCell>{food.food_name}</TableCell>
                     <TableCell>{food.brand_name || "Non-branded"}</TableCell>
                     <TableCell>{food.food_description}</TableCell>
                   </TableRow>)}
                   {foodSearchStatus == "loading" &&
-                  Array.from({ length: 5 }).map(() => <TableRow>
+                  Array.from({ length: 5 }).map((_, index) => <TableRow key={index}>
                     <TableCell></TableCell>
                     <TableCell><Skeleton width={"100%"} /></TableCell>
                     <TableCell><Skeleton width={"100%"} /></TableCell>
@@ -252,16 +206,92 @@ const MealEditor = ({ closePage, mobile = false }: { closePage: () => void, mobi
     )
   }
 
+  const CloseDialog = () => {
+    return (
+      <>
+        <Dialog open={closeDialog} onClose={() => setCloseDialog(false)}>
+          <DialogTitle>Unsaved changes</DialogTitle>
+          <DialogContent><DialogContentText>There are unsaved changes on this page. Are you sure you want to discard them?</DialogContentText></DialogContent>
+          <DialogActions>
+            <Button onClick={() => setCloseDialog(false)}>Cancel</Button>
+            <Button color="error" onClick={closePage}>Discard</Button>
+          </DialogActions>
+        </Dialog>
+      </>
+    )
+  }
+
+  //
+  // useEffect hooks
+  //
+  useEffect(() => {
+    const updateHeight = () => {
+      if (constraintsRef.current) {
+        const newHeight = constraintsRef.current.getBoundingClientRect().height;
+        setConstraintsHeight(newHeight);
+      }
+    }
+
+    updateHeight();
+
+    const resizeObserver = new ResizeObserver(updateHeight);
+    if (constraintsRef.current) {
+      resizeObserver.observe(constraintsRef.current);
+    }
+  }, []);
+
+  useEffect(() => {
+    const LoadMeal = (mealIndex?: number) => {
+      if (mealIndex) {
+        setMealName(meals[mealIndex].name);
+        setMealTime(meals[mealIndex].timestamp);
+        setFoodsAdded(meals[mealIndex].foods.map((food) => { return {
+          name: food.name,
+          id: food.id,
+          unit: food.unit,
+          quantity: food.quantity,
+          calories: food.calories,
+          fat: food.fat,
+          carbs: food.carbs,
+          protein: food.protein
+        }}));
+      }
+      else {
+        const mealsToday = meals.filter((meal) => new Date(meal.timestamp).toLocaleDateString() == new Date().toLocaleDateString()).length;
+        setMealName(`Meal #${mealsToday + 1} on ${new Date().toLocaleDateString()}`);
+        setMealTime(Date.now());
+        setFoodsAdded([]);
+      }
+
+      isLoaded.current = true;
+    }
+
+    LoadMeal(mealIndex);
+  }, [mealIndex, meals]);
+
+  useEffect(() => {
+    const fetchResults = async () => {
+      if (debouncedFoodQuery.length > 2) {
+        setFoodSearchStatus("loading");
+        const result = await searchFoods(debouncedFoodQuery);
+        setFoodResults(result.foods.food || []);
+        setFoodSearchStatus("display");
+      } else {
+        setFoodResults([]);
+        setFoodSearchStatus("none");
+      }
+    };
+    fetchResults();
+  }, [debouncedFoodQuery]);
+
+  useEffect(() => {
+    if (isLoaded.current && !isMount.current) setChangesMade(true);
+    if (isMount.current) isMount.current = false;
+  }, [mealName, mealTime, foodsAdded]);
+
   return (
     <>
-    <Dialog open={closeDialog} onClose={() => setCloseDialog(false)}>
-      <DialogTitle>Unsaved changes</DialogTitle>
-      <DialogContent><DialogContentText>There are unsaved changes on this page. Are you sure you want to discard them?</DialogContentText></DialogContent>
-      <DialogActions>
-        <Button onClick={() => setCloseDialog(false)}>Cancel</Button>
-        <Button color="error" onClick={closePage}>Discard</Button>
-      </DialogActions>
-    </Dialog>
+    <CloseDialog />
     {!mobile &&
     <motion.div 
       initial={{y: "100vh"}}
