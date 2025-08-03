@@ -45,7 +45,7 @@ const getFood = async (id: number) => {
   }
 }
 
-const Add = ({ closePage, variant = "desktop" }: { closePage: () => void, variant: "desktop" | "mobile" }) => {
+const MealEditor = ({ closePage, mobile = false }: { closePage: () => void, mobile: boolean }) => {
   const [closeDialog, setCloseDialog] = useState(false);
   const constraintsRef = useRef<HTMLDivElement>(null);
   const pageRef = useRef<HTMLDivElement>(null);
@@ -245,7 +245,7 @@ const Add = ({ closePage, variant = "desktop" }: { closePage: () => void, varian
         <Button color="error" onClick={closePage}>Discard</Button>
       </DialogActions>
     </Dialog>
-    {variant == "desktop" &&
+    {!mobile &&
     <motion.div 
       initial={{y: "100vh"}}
       animate={{y: 0}}
@@ -257,7 +257,7 @@ const Add = ({ closePage, variant = "desktop" }: { closePage: () => void, varian
         <AddContent />
       </Paper>
     </motion.div>}
-    {variant == "mobile" &&
+    {mobile &&
     <>
       <motion.div initial={{opacity: 0}} animate={{opacity: 1}} exit={{opacity: 0}}><Backdrop open /></motion.div>
       <motion.div 
@@ -269,6 +269,7 @@ const Add = ({ closePage, variant = "desktop" }: { closePage: () => void, varian
         ref={pageRef}
         onDragEnd={() => (pageRef.current?.getBoundingClientRect().y || 0) > 400 && closePage()}
         exit={{y: "100vh"}}
+        transition={{type: "tween"}}
         className="w-screen h-screen fixed top-0 left-0 overflow-visible"
       >
         <div ref={constraintsRef}>
@@ -283,4 +284,4 @@ const Add = ({ closePage, variant = "desktop" }: { closePage: () => void, varian
   )
 }
 
-export default Add
+export default MealEditor

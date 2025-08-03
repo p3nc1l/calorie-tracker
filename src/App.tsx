@@ -3,7 +3,7 @@ import Foods from "./components/pages/Foods.tsx";
 import Meals from "./components/pages/Meals.tsx";
 import Profile from "./components/pages/Profile.tsx";
 import Navbar from "./components/Navbar"
-import Add from "./components/pages/Add.tsx";
+import MealEditor from "./components/pages/MealEditor.tsx";
 
 import { useState } from "react";
 import { Box } from "@mui/material";
@@ -48,7 +48,7 @@ function App() {
         <Profile />
       </motion.div>
       <Navbar page={page} setPage={(newPage) => setPage(newPage)} setAddPage={setAddPage} />
-      <AnimatePresence>{addPage && <Add closePage={() => setAddPage(false)} variant={isMobile ? "mobile" : "desktop"} />}</AnimatePresence>
+      <AnimatePresence>{addPage && <MealEditor closePage={() => setAddPage(false)} mobile={isMobile} />}</AnimatePresence>
     </Box>
   )
 }
