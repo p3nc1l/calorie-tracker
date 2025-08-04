@@ -334,7 +334,7 @@ const MealEditor = ({ closePage, mobile = false, mealIndex }: { closePage: () =>
           dragConstraints={{top: ((windowSize.height || 0) - constraintsHeight), bottom: 0}}
           dragElastic={{top: 0.0001, bottom: 1}}
           ref={pageRef}
-          onDragEnd={() => (pageRef.current?.getBoundingClientRect().y || 0) > 400 && closePage()}
+          onDragEnd={() => (pageRef.current?.getBoundingClientRect().y || 0) > 400 && CloseButton()}
           exit={{y: "100vh"}}
           transition={{type: "tween"}}
           className="w-screen h-screen fixed top-0 left-0 overflow-visible"
