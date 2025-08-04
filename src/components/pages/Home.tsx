@@ -25,7 +25,7 @@ const Home = () => {
   return (
     <>
       <Box className="mt-20">
-        <Typography sx={{ fontWeight: 600 }} variant="h3" component={"h1"}>Hi, <span className="bg-gradient-to-r from-green-700 to-yellow-500 text-transparent bg-clip-text">{nickname}</span><br />{(dailyGoal) - (reachedToday.calories)} more calories to reach your daily goal</Typography>
+        <Typography sx={{ fontWeight: 600 }} variant="h3" component={"h1"}>Hi, <span className="bg-gradient-to-r from-green-700 to-yellow-500 text-transparent bg-clip-text">{nickname}</span><br />{dailyGoal > reachedToday.calories ? `${+(dailyGoal - reachedToday.calories).toFixed(2)} more calories to reach your daily goal` : `You have surpassed your daily goal with ${+(reachedToday.calories - dailyGoal).toFixed(2)} calories`}</Typography>
       </Box>
       <Box className="flex flex-row flex-wrap mt-20 gap-4">
         <Card>

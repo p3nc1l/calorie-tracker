@@ -5,7 +5,7 @@ import { useLocalStorage } from "@uidotdev/usehooks";
 import type { Meal } from "../../App";
 import { useState } from "react";
 
-const Meals = () => {
+const Meals = ({ setMealEditor }: { setMealEditor: (index: number) => void }) => {
   const [meals, setMeals] = useLocalStorage<Meal[]>("meals", []);
   const [deleteDialog, setDeleteDialog] = useState<number | null>(null);
 
@@ -71,7 +71,10 @@ const Meals = () => {
                   )}
                 </TableBody>
               </Table>
-              <Box className="flex flex-row-reverse gap-2 p-2"><Box className="w-max"><Button variant="contained" color="error" onClick={() => setDeleteDialog(index)}>Delete</Button></Box></Box>
+              <Box className="flex flex-row-reverse gap-2 p-2">
+                <Box className="w-max"><Button variant="contained" color="error" onClick={() => setDeleteDialog(index)}>Delete</Button></Box>
+                <Box className="w-max"><Button variant="outlined" onClick={() => setMealEditor(index)}>Edit</Button></Box>
+              </Box>
             </Collapse>
           </TableCell>
         </TableRow>
