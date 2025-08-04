@@ -34,6 +34,7 @@ function App() {
   const [page, setPage] = useState(0);
   const lastPage = usePrevious(page);
   const [addPage, setAddPage] = useState(false);
+  const [mealEditorIndex, setMealEditorIndex] = useState<number | undefined>();
 
   return (
     <Box className={`w-screen h-screen overflow-x-hidden`}>
@@ -44,11 +45,11 @@ function App() {
         className="flex w-fit">
         <PageLayout active={page == 0 ? true : false}><Home /></PageLayout>
         <PageLayout active={page == 1 ? true : false}><Foods /></PageLayout>
-        <PageLayout active={page == 2 ? true : false}><Meals /></PageLayout>
+        <PageLayout active={page == 2 ? true : false}><Meals setMealEditor={(index) => setMealEditorIndex(index)} /></PageLayout>
         <Profile />
       </motion.div>
       <Navbar page={page} setPage={(newPage) => setPage(newPage)} setAddPage={setAddPage} />
-      <AnimatePresence>{addPage && <MealEditor closePage={() => setAddPage(false)} mobile={isMobile} />}</AnimatePresence>
+      <AnimatePresence>{(addPage || mealEditorIndex != undefined) && <MealEditor closePage={() => {setAddPage(false); setMealEditorIndex(undefined)}} mobile={isMobile} mealIndex={mealEditorIndex} />}</AnimatePresence>
     </Box>
   )
 }

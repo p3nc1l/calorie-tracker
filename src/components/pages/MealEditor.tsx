@@ -182,7 +182,8 @@ const Form = ({ closePage }: { closePage: () => void }) => {
       return { name: foodAdded.name, id: foodAdded.id, calories: foodAdded.calories, quantity: foodAdded.quantity, unit: foodAdded.unit, fat: foodAdded.fat, carbs: foodAdded.carbs, protein: foodAdded.protein }
     })
     const newMeal: Meal = { name: mealName, timestamp: mealTime, foods: foods };
-    localStorage.setItem("meals", JSON.stringify(meals.concat(newMeal)));
+    if (mealIndex != undefined) localStorage.setItem("meals", JSON.stringify(meals.map((value, index) => index == mealIndex ? newMeal : value)));
+    else localStorage.setItem("meals", JSON.stringify(meals.concat(newMeal)));
     closePage();
   }
 
@@ -213,7 +214,7 @@ const Form = ({ closePage }: { closePage: () => void }) => {
 
   useEffect(() => {
     const LoadMeal = (mealIndex?: number) => {
-      if (mealIndex) {
+      if (mealIndex != undefined) {
         setMealName(meals[mealIndex].name);
         setMealTime(meals[mealIndex].timestamp);
         setFoodsAdded(meals[mealIndex].foods.map((food) => { return {
@@ -256,7 +257,7 @@ const Form = ({ closePage }: { closePage: () => void }) => {
   return (
     <Box className={"w-screen flex-none flex flex-col items-center"}>
       <Box className="w-full max-w-7xl px-4 mb-16 flex flex-col gap-4">
-        <Typography variant="h4" component={"h1"}>{`${mealIndex ? "Edit" : "Add"} Meal`}</Typography>
+        <Typography variant="h4" component={"h1"}>{`${mealIndex != undefined ? "Edit" : "Add"} Meal`}</Typography>
         <TextField className="max-w-lg" fullWidth variant="outlined" margin="normal" label="Meal Name" value={mealName} onChange={(e) => {setMealName(e.target.value); changeMade()}} />
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <Box className="max-w-md"><DateTimePicker label="Meal Time" value={dayjs(mealTime)} onChange={(newMealTime) => {setMealTime(newMealTime?.valueOf() || Date.now()); changeMade()}} /></Box>
