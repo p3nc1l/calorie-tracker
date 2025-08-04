@@ -192,18 +192,20 @@ const Form = ({ closePage }: { closePage: () => void }) => {
       changeMade();
       return;
     }
-    
-    setFoodsAddedStatus("loading");
-    const result = await getFood(id);
-
-    const food = result.food;
-    const serving = result.food.servings.serving.calories != null ? result.food.servings.serving : result.food.servings.serving[0];
-    const num = +serving.number_of_units;
 
     const exists = foodsAdded.findIndex((food) => food.id == id);
 
-    if (exists != -1) setFoodsAdded(prevFoodsAdded => prevFoodsAdded.map((value, i) => i === exists ? { ...value, quantity: value.quantity + num } : value));
-    else setFoodsAdded(prevFoodsAdded => prevFoodsAdded.concat({ name: food.food_name, id: id, unit: serving.measurement_description, quantity: num, calories: serving.calories / num, fat: serving.fat / num, carbs: serving.carbohydrate / num, protein: serving.protein / num }));
+    if (exists != -1) setFoodsAdded(prevFoodsAdded => prevFoodsAdded.map((value, i) => i === exists ? { ...value, quantity: value.quantity + 1 } : value));
+    else {
+      setFoodsAddedStatus("loading");
+      const result = await getFood(id);
+
+      const food = result.food;
+      const serving = result.food.servings.serving.calories != null ? result.food.servings.serving : result.food.servings.serving[0];
+      const num = +serving.number_of_units;
+
+      setFoodsAdded(prevFoodsAdded => prevFoodsAdded.concat({ name: food.food_name, id: id, unit: serving.measurement_description, quantity: num, calories: serving.calories / num, fat: serving.fat / num, carbs: serving.carbohydrate / num, protein: serving.protein / num }));
+    }
 
     setFoodsAddedStatus("display");
     changeMade();
