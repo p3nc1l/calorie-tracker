@@ -11,6 +11,7 @@ import axios from "axios";
 import AddIcon from '@mui/icons-material/Add';
 import { Remove } from "@mui/icons-material";
 import { motion } from "motion/react";
+import SavedDataContext from "../../SavedDataContext";
 
 const MealIndexContext = createContext<number | undefined>(undefined);
 const ChangeMadeContext = createContext<() => void>(() => {});
@@ -161,7 +162,7 @@ const Form = ({ closePage }: { closePage: () => void }) => {
   const mealIndex = useContext(MealIndexContext);
   const changeMade = useContext(ChangeMadeContext);
   
-  const [meals] = useState<Meal[]>(JSON.parse(localStorage.getItem("meals") || "[]"));
+  const { meals, setMeals } = useContext(SavedDataContext);
   const [mealName, setMealName] = useState("");
   const [mealTime, setMealTime] = useState(0);
   const [foodsAdded, setFoodsAdded] = useState<Food[]>([]);
@@ -182,8 +183,8 @@ const Form = ({ closePage }: { closePage: () => void }) => {
       return { name: foodAdded.name, id: foodAdded.id, calories: foodAdded.calories, quantity: foodAdded.quantity, unit: foodAdded.unit, fat: foodAdded.fat, carbs: foodAdded.carbs, protein: foodAdded.protein }
     })
     const newMeal: Meal = { name: mealName, timestamp: mealTime, foods: foods };
-    if (mealIndex != undefined) localStorage.setItem("meals", JSON.stringify(meals.map((value, index) => index == mealIndex ? newMeal : value)));
-    else localStorage.setItem("meals", JSON.stringify(meals.concat(newMeal)));
+    if (mealIndex != undefined) setMeals(meals.map((value, index) => index == mealIndex ? newMeal : value));
+    else setMeals(meals.concat(newMeal));
     closePage();
   }
 

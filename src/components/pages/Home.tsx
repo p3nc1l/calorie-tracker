@@ -4,14 +4,12 @@ import CardContent from "@mui/material/CardContent"
 import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
 import { LocalDining, Whatshot } from "@mui/icons-material";
-import { useLocalStorage } from "@uidotdev/usehooks";
-
-import { type Meal } from "../../App";
+import SavedDataContext from "../../SavedDataContext";
+import { useContext } from "react";
 
 const Home = () => {
-  const [nickname] = useLocalStorage("nickname", "user");
-  const [dailyGoal] = useLocalStorage("dailyGoal", Infinity);
-  const [meals] = useLocalStorage<Meal[]>("meals", []);
+
+  const { nickname, dailyGoal, meals } = useContext(SavedDataContext);
 
   const mealsToday = meals.filter((meal) => new Date(meal.timestamp).toLocaleDateString() == new Date().toLocaleDateString());
 
