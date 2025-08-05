@@ -3,11 +3,20 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import { useLocalStorage } from "@uidotdev/usehooks";
 import type { Meal } from "../../App";
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 
 const MealsContext = createContext<Meal[]>([]);
 const SetMealEditorContext = createContext<(index: number) => void>(() => {});
 const SetDeleteDialogContext = createContext<(id: number) => void>(() => {});
+
+interface MealsCategorised {
+  today: number[],
+  yesterday: number[],
+  thisWeek: number[],
+  thisMonth: number[],
+  thisYear: number[],
+  other: number[]
+}
 
 const MealTable = ({ meal }: { meal: Meal }) => {
   return (
@@ -67,9 +76,9 @@ const MealRow = ({ meal, index }: { meal: Meal, index: number }) => {
   )
 }
 
-const MealsTable = () => {
+const MealsTable = ({ mealIndexes }: { mealIndexes: number[] }) => {
   const meals = useContext(MealsContext);
-
+  
   return (
     <TableContainer component={Paper} className="mt-8 max-w-2xl mx-auto">
       <Table>
@@ -82,10 +91,48 @@ const MealsTable = () => {
           </TableRow>
         </TableHead>
         <TableBody>
-          {meals.map((meal, index) => <MealRow index={index} key={index} meal={meal} />)}
+          {mealIndexes.map((mealIndex, index) => <MealRow index={mealIndex} key={index} meal={meals[mealIndex]} />)}
         </TableBody>
       </Table>
     </TableContainer>
+  )
+}
+
+//manages all the different tables for the different grouping catagories
+const CategoryTables = ({ mealsCategorised }: { mealsCategorised: MealsCategorised }) => {
+  return (
+    <>
+      {mealsCategorised.today.length > 0 &&
+      <Box className="my-12">
+        <Box className="max-w-2xl mx-auto"><Typography variant="h5" component={"span"}>Today</Typography></Box>
+        <MealsTable mealIndexes={mealsCategorised.today}></MealsTable>
+      </Box>}
+      {mealsCategorised.yesterday.length > 0 &&
+      <Box className="my-12">
+        <Box className="max-w-2xl mx-auto"><Typography variant="h5" component={"span"}>Yesterday</Typography></Box>
+        <MealsTable mealIndexes={mealsCategorised.yesterday}></MealsTable>
+      </Box>}
+      {mealsCategorised.thisWeek.length > 0 &&
+      <Box className="my-12">
+        <Box className="max-w-2xl mx-auto"><Typography variant="h5" component={"span"}>This Week</Typography></Box>
+        <MealsTable mealIndexes={mealsCategorised.thisWeek}></MealsTable>
+      </Box>}
+      {mealsCategorised.thisMonth.length > 0 &&
+      <Box className="my-12">
+        <Box className="max-w-2xl mx-auto"><Typography variant="h5" component={"span"}>This Month</Typography></Box>
+        <MealsTable mealIndexes={mealsCategorised.thisMonth}></MealsTable>
+      </Box>}
+      {mealsCategorised.thisYear.length > 0 &&
+      <Box className="my-12">
+        <Box className="max-w-2xl mx-auto"><Typography variant="h5" component={"span"}>This Year</Typography></Box>
+        <MealsTable mealIndexes={mealsCategorised.thisYear}></MealsTable>
+      </Box>}
+      {mealsCategorised.other.length > 0 &&
+      <Box className="my-12">
+        <Box className="max-w-2xl mx-auto"><Typography variant="h5" component={"span"}>Other</Typography></Box>
+        <MealsTable mealIndexes={mealsCategorised.other}></MealsTable>
+      </Box>}
+    </>
   )
 }
 
@@ -117,19 +164,52 @@ function DeleteDialog({ deleteDialog, setDeleteDialog, setMeals }: { deleteDialo
 const Meals = ({ setMealEditor }: { setMealEditor: (index: number) => void }) => {
   const [meals, setMeals] = useLocalStorage<Meal[]>("meals", []);
   const [deleteDialog, setDeleteDialog] = useState<number | null>(null);
+  const mealsCategorised = useRef<MealsCategorised>({
+    today: [],
+    yesterday: [],
+    thisWeek: [],
+    thisMonth: [],
+    thisYear: [],
+    other: []
+  });
 
-  /*const mealCategoryTimestamps = {
-    today: Date.parse(new Date().toDateString()),
-    yesterday: Date.parse(new Date().toDateString()) - 24 * 60 * 60 * 1000,
-    lastWeek: Date.parse(new Date().toDateString()) - new Date(new Date().toDateString()).getDay() * 24 * 60 * 60 * 1000,
-    lastMonth: new Date(new Date().toDateString()).setDate(1),
-    lastYear: new Date(new Date().getFullYear()).getTime()
-  }*/
+  useEffect(() => {
+    const CategoriseMeals = (meals: Meal[]) => {
+      const mealsCategorised: MealsCategorised = {
+        today: [],
+        yesterday: [],
+        thisWeek: [],
+        thisMonth: [],
+        thisYear: [],
+        other: []
+      }
+      const mealCategoryTimestamps = {
+        today: Date.parse(new Date().toDateString()),
+        yesterday: Date.parse(new Date().toDateString()) - 24 * 60 * 60 * 1000,
+        thisWeek: Date.parse(new Date().toDateString()) - new Date(new Date().toDateString()).getDay() * 24 * 60 * 60 * 1000,
+        thisMonth: new Date(new Date().toDateString()).setDate(1),
+        thisYear: new Date(new Date().getFullYear(), 0).getTime()
+      }
+
+      meals.map((meal, index) => {
+        if (meal.timestamp <= Date.now() && meal.timestamp >= mealCategoryTimestamps.today) mealsCategorised.today.push(index);
+        else if (meal.timestamp < mealCategoryTimestamps.today && meal.timestamp >= mealCategoryTimestamps.yesterday) mealsCategorised.yesterday.push(index);
+        else if (meal.timestamp < mealCategoryTimestamps.yesterday && meal.timestamp >= mealCategoryTimestamps.thisWeek) mealsCategorised.thisWeek.push(index);
+        else if (meal.timestamp < mealCategoryTimestamps.thisWeek && meal.timestamp >= mealCategoryTimestamps.thisMonth) mealsCategorised.thisMonth.push(index);
+        else if (meal.timestamp < mealCategoryTimestamps.thisMonth && meal.timestamp >= mealCategoryTimestamps.thisYear) mealsCategorised.thisYear.push(index);
+        else mealsCategorised.other.push(index);
+      })
+
+      return mealsCategorised;
+    }
+
+    mealsCategorised.current = CategoriseMeals(meals);
+  }, [meals]);
 
   return (
     <MealsContext value={meals}><SetMealEditorContext value={setMealEditor}><SetDeleteDialogContext value={(id) => setDeleteDialog(id)}>
       <DeleteDialog deleteDialog={deleteDialog} setDeleteDialog={(index) => setDeleteDialog(index)} setMeals={setMeals} />
-      {meals.length > 0 ? <MealsTable /> :
+      {meals.length > 0 ? <CategoryTables mealsCategorised={mealsCategorised.current} /> :
       <Box className="mt-12"><Typography variant="h4" component={"p"} align="center">You haven't logged any meals yet</Typography></Box>}
     </SetDeleteDialogContext></SetMealEditorContext></MealsContext>
   )
