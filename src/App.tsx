@@ -36,8 +36,8 @@ function App() {
   const [mealEditorIndex, setMealEditorIndex] = useState<number | undefined>();
 
   const [meals, setMeals] = useState<Meal[]>(JSON.parse(localStorage.getItem("meals") || "[]"));
-  const [dailyGoal, setDailyGoal] = useState(JSON.parse(localStorage.getItem("dailyGoal") || "Infinity"));
-  const [nickname, setNickname] = useState(JSON.parse(localStorage.getItem("nickname") || ""));
+  const [dailyGoal, setDailyGoal] = useState(JSON.parse(localStorage.getItem("dailyGoal") || `0`));
+  const [nickname, setNickname] = useState(JSON.parse(localStorage.getItem("nickname") || `""`));
 
   useEffect(() => {
     localStorage.setItem("meals", JSON.stringify(meals));
