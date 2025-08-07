@@ -321,7 +321,7 @@ const MealEditor = ({ closePage, mobile = false, mealIndex }: { closePage: () =>
         transition={{type: "tween"}}
         className="w-screen h-screen fixed top-0 left-0 overflow-y-auto overflow-x-hidden"
       >
-        <Paper elevation={0}>
+        <Paper elevation={0} sx={{minHeight: "100vh"}}>
           <MealIndexContext value={mealIndex}><ChangeMadeContext value={() => setChangesMade(true)} ><PageContent closeButton={CloseButton} closePage={closePage} /></ChangeMadeContext></MealIndexContext>
         </Paper>
       </motion.div>}
@@ -342,7 +342,7 @@ const MealEditor = ({ closePage, mobile = false, mealIndex }: { closePage: () =>
         >
           <div ref={constraintsRef}>
             <div className="w-full h-12" />
-            <Paper elevation={0} sx={{borderRadius: "20px 20px 0 0"}}>
+            <Paper elevation={0} sx={{borderRadius: "20px 20px 0 0", minHeight: "100vh"}}>
               <MealIndexContext value={mealIndex}><ChangeMadeContext value={() => setChangesMade(true)} ><PageContent closeButton={CloseButton} closePage={closePage} /></ChangeMadeContext></MealIndexContext>
             </Paper>
           </div>
