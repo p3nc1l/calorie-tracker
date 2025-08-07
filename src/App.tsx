@@ -11,6 +11,7 @@ import { AnimatePresence, motion } from "motion/react";
 import PageLayout from "./components/pages/PageLayout.tsx";
 import { usePrevious } from "@uidotdev/usehooks";
 import { isMobile } from "react-device-detect";
+import Setup from "./components/pages/setup/Setup.tsx";
 
 interface Food {
   name: string,
@@ -44,6 +45,8 @@ function App() {
     localStorage.setItem("dailyGoal", JSON.stringify(dailyGoal));
     localStorage.setItem("nickname", JSON.stringify(nickname));
   }, [meals, dailyGoal, nickname])
+
+  if (nickname == "") return (<Setup />);
 
   return (
     <SavedDataContext value={{meals: meals, setMeals: setMeals, dailyGoal: dailyGoal, setDailyGoal: setDailyGoal, nickname: nickname, setNickname: setNickname}}>
