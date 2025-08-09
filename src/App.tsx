@@ -59,7 +59,7 @@ function App() {
           <PageLayout active={page == 0 ? true : false}><Home /></PageLayout>
           <PageLayout active={page == 1 ? true : false}><Foods /></PageLayout>
           <PageLayout active={page == 2 ? true : false}><Meals setMealEditor={(index) => setMealEditorIndex(index)} /></PageLayout>
-          <Profile />
+          <PageLayout active={page == 3 ? true : false}><Profile /></PageLayout>
         </motion.div>
         <Navbar page={page} setPage={(newPage) => setPage(newPage)} setAddPage={setAddPage} />
         <AnimatePresence>{(addPage || mealEditorIndex != undefined) && <MealEditor closePage={() => {setAddPage(false); setMealEditorIndex(undefined)}} mobile={isMobile} mealIndex={mealEditorIndex} />}</AnimatePresence>
