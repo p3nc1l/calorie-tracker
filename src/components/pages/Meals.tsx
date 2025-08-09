@@ -1,4 +1,4 @@
-import { TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Paper, Typography, Box, Collapse, IconButton, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Button } from "@mui/material";
+import { TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Paper, Typography, Box, Collapse, IconButton, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Button, Pagination } from "@mui/material";
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import type { Meal } from "../../App";
@@ -97,8 +97,46 @@ const MealsTable = ({ mealIndexes }: { mealIndexes: number[] }) => {
   )
 }
 
-//manages all the different tables for the different grouping catagories
-const CategoryTables = ({ mealsCategorised }: { mealsCategorised: MealsCategorised }) => {
+const CategoryTables = () => {
+  const meals = useContext(SavedDataContext).meals;
+  const [page, setPage] = useState(1);
+  const mealsPerPage = 20;
+
+  if (meals.length < (page - 1) * mealsPerPage + 1) setPage(prevPage => prevPage - 1);
+  
+  const CategoriseMeals = (meals: Meal[], mealsPerPage: number, page: number) => {
+    const mealsCategorised: MealsCategorised = {
+      today: [],
+      yesterday: [],
+      thisWeek: [],
+      thisMonth: [],
+      thisYear: [],
+      other: []
+    }
+    const mealCategoryTimestamps = {
+      today: Date.parse(new Date().toDateString()),
+      yesterday: Date.parse(new Date().toDateString()) - 24 * 60 * 60 * 1000,
+      thisWeek: Date.parse(new Date().toDateString()) - new Date(new Date().toDateString()).getDay() * 24 * 60 * 60 * 1000,
+      thisMonth: new Date(new Date().toDateString()).setDate(1),
+      thisYear: new Date(new Date().getFullYear(), 0).getTime()
+    }
+
+    meals.map((meal, index) => {
+      if (index >= page * mealsPerPage && index <= page * mealsPerPage + 19) {
+        if (meal.timestamp <= Date.now() && meal.timestamp >= mealCategoryTimestamps.today) mealsCategorised.today.push(index);
+        else if (meal.timestamp < mealCategoryTimestamps.today && meal.timestamp >= mealCategoryTimestamps.yesterday) mealsCategorised.yesterday.push(index);
+        else if (meal.timestamp < mealCategoryTimestamps.yesterday && meal.timestamp >= mealCategoryTimestamps.thisWeek) mealsCategorised.thisWeek.push(index);
+        else if (meal.timestamp < mealCategoryTimestamps.thisWeek && meal.timestamp >= mealCategoryTimestamps.thisMonth) mealsCategorised.thisMonth.push(index);
+        else if (meal.timestamp < mealCategoryTimestamps.thisMonth && meal.timestamp >= mealCategoryTimestamps.thisYear) mealsCategorised.thisYear.push(index);
+        else mealsCategorised.other.push(index);
+      }
+    })
+
+    return mealsCategorised;
+  }
+
+  const mealsCategorised = CategoriseMeals(meals, mealsPerPage, page - 1);
+
   return (
     <>
       {mealsCategorised.today.length > 0 &&
@@ -130,6 +168,9 @@ const CategoryTables = ({ mealsCategorised }: { mealsCategorised: MealsCategoris
       <Box className="my-12">
         <Box className="max-w-2xl mx-auto"><Typography variant="h5" component={"span"}>Other</Typography></Box>
         <MealsTable mealIndexes={mealsCategorised.other}></MealsTable>
+      </Box>}
+      {meals.length > mealsPerPage && <Box className="w-max mx-auto pb-4">
+        <Pagination page={page} onChange={(_, value) => setPage(value)} count={Math.ceil(meals.length / 20)} color="primary" />
       </Box>}
     </>
   )
@@ -163,42 +204,11 @@ function DeleteDialog({ deleteDialog, setDeleteDialog, setMeals }: { deleteDialo
 const Meals = ({ setMealEditor }: { setMealEditor: (index: number) => void }) => {
   const [deleteDialog, setDeleteDialog] = useState<number | null>(null);
   const meals = useContext(SavedDataContext).meals;
-  
-  const CategoriseMeals = (meals: Meal[]) => {
-    const mealsCategorised: MealsCategorised = {
-      today: [],
-      yesterday: [],
-      thisWeek: [],
-      thisMonth: [],
-      thisYear: [],
-      other: []
-    }
-    const mealCategoryTimestamps = {
-      today: Date.parse(new Date().toDateString()),
-      yesterday: Date.parse(new Date().toDateString()) - 24 * 60 * 60 * 1000,
-      thisWeek: Date.parse(new Date().toDateString()) - new Date(new Date().toDateString()).getDay() * 24 * 60 * 60 * 1000,
-      thisMonth: new Date(new Date().toDateString()).setDate(1),
-      thisYear: new Date(new Date().getFullYear(), 0).getTime()
-    }
-
-    meals.map((meal, index) => {
-      if (meal.timestamp <= Date.now() && meal.timestamp >= mealCategoryTimestamps.today) mealsCategorised.today.push(index);
-      else if (meal.timestamp < mealCategoryTimestamps.today && meal.timestamp >= mealCategoryTimestamps.yesterday) mealsCategorised.yesterday.push(index);
-      else if (meal.timestamp < mealCategoryTimestamps.yesterday && meal.timestamp >= mealCategoryTimestamps.thisWeek) mealsCategorised.thisWeek.push(index);
-      else if (meal.timestamp < mealCategoryTimestamps.thisWeek && meal.timestamp >= mealCategoryTimestamps.thisMonth) mealsCategorised.thisMonth.push(index);
-      else if (meal.timestamp < mealCategoryTimestamps.thisMonth && meal.timestamp >= mealCategoryTimestamps.thisYear) mealsCategorised.thisYear.push(index);
-      else mealsCategorised.other.push(index);
-    })
-
-    return mealsCategorised;
-  }
-
-  const mealsCategorised = CategoriseMeals(meals);
 
   return (
     <SetMealEditorContext value={setMealEditor}><SetDeleteDialogContext value={(id) => setDeleteDialog(id)}>
       <DeleteDialog deleteDialog={deleteDialog} setDeleteDialog={(index) => setDeleteDialog(index)} setMeals={useContext(SavedDataContext).setMeals} />
-      {meals.length > 0 ? <CategoryTables mealsCategorised={mealsCategorised} /> :
+      {meals.length > 0 ? <CategoryTables /> :
       <Box className="mt-12"><Typography variant="h4" component={"p"} align="center">You haven't logged any meals yet</Typography></Box>}
     </SetDeleteDialogContext></SetMealEditorContext>
   )
