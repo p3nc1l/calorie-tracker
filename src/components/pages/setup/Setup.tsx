@@ -1,13 +1,18 @@
-import { Box, Button, Typography } from "@mui/material"
-import { ArrowRightAlt } from "@mui/icons-material"
+import { Box, Typography } from "@mui/material"
 import { useState } from "react";
 import Page1 from "./Page1";
+import Page2 from "./Page2";
+import ButtonBar from "./ButtonBar";
+import Page3 from "./Page3";
 
-const Setup = () => {
+const Setup = ({ setNickname, setDailyGoal }: { setNickname: React.Dispatch<React.SetStateAction<string>>, setDailyGoal: React.Dispatch<React.SetStateAction<number>> }) => {
   const [page, setPage] = useState(0);
+  const [setupNickname, setSetupNickname] = useState("");
+  const [setupGoal, setSetupGoal] = useState(1000);
 
-  const NextPage = () => {
-    setPage(prevPage => prevPage + 1);
+  const Finish = () => {
+    setNickname(setupNickname);
+    setDailyGoal(setupGoal);
   }
 
   if (page == 0) return (
@@ -16,11 +21,13 @@ const Setup = () => {
         <img width={200} src="/thunder.png" />
         <Typography variant="h3" component={"h1"}>Calorie Tracker</Typography>
       </Box>
-      <Button variant="contained" endIcon={<ArrowRightAlt />} onClick={NextPage} size="large">Get Started</Button>
+      <ButtonBar setPage={setPage} variant="get-started" />
     </Box>
   )
-  else if (page == 1) return (<Page1 nextPage={NextPage} />)
-
+  else if (page == 1) return (<Page1 setPage={setPage} />)
+  else if (page == 2) return (<Page2 nickname={setupNickname} setNickname={setSetupNickname} setPage={setPage} />)
+  else if (page == 3) return (<Page3 dailyGoal={setupGoal} setDailyGoal={setSetupGoal} setPage={setPage} />)
+  else if (page == 4) Finish();
 }
 
 export default Setup

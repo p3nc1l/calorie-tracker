@@ -46,7 +46,7 @@ function App() {
     localStorage.setItem("nickname", JSON.stringify(nickname));
   }, [meals, dailyGoal, nickname])
 
-  if (nickname == "") return (<Setup />);
+  if (nickname == "") return (<Setup setNickname={setNickname} setDailyGoal={setDailyGoal} />);
 
   return (
     <SavedDataContext value={{meals: meals, setMeals: setMeals, dailyGoal: dailyGoal, setDailyGoal: setDailyGoal, nickname: nickname, setNickname: setNickname}}>
