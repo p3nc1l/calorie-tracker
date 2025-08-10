@@ -1,7 +1,7 @@
 import { useContext, useState } from "react"
 import SavedDataContext from "../../SavedDataContext"
-import { Box, TextField, IconButton, Button, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from "@mui/material";
-import { Done, Edit, AccountCircle } from "@mui/icons-material";
+import { Box, TextField, IconButton, Button, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Typography } from "@mui/material";
+import { Done, Edit, AccountCircle, ArrowBackIosNew } from "@mui/icons-material";
 
 const NicknameBox = () => {
   const savedNickname = useContext(SavedDataContext).nickname;
@@ -85,18 +85,42 @@ const DailyGoalArea = () => {
   )
 }
 
+const Credits = ({ close }: { close: () => void }) => {
+  return (
+    <>
+      <Box className="p-1"><IconButton onClick={close}><ArrowBackIosNew /></IconButton></Box>
+      <Box className="flex flex-col gap-2">
+        <Typography variant="h6" component={"p"}>Developer: <a href="https://www.p3nc1l.com"><u>p3nc1l</u></a></Typography>
+        <Box className="flex gap-2">
+          <Box><Typography variant="h6" component={"p"}>Icons: </Typography></Box>
+          <Box>
+            <Typography variant="h6" component={"p"}><a href="https://www.flaticon.com/free-icons/thunder" title="thunder icons"><u>Thunder icons created by Pixel perfect - Flaticon</u></a></Typography>
+          </Box>
+        </Box>
+      </Box>
+    </>
+  )
+}
+
 const Profile = () => {
   const [resetDialog, setResetDialog] = useState(false);
+  const [credits, setCredits] = useState(false);
 
   const CloseResetDialog = () => {
     setResetDialog(false);
   }
 
-  return (
+  const CloseCredits = () => {
+    setCredits(false);
+  }
+
+  if (credits) return (<Credits close={CloseCredits} />)
+  else return (
     <>
       <ResetDataDialog visible={resetDialog} closeDialog={CloseResetDialog} />
       <Box className="mt-16 mx-auto w-max"><AvatarArea /></Box>
       <Box className="mt-16"><DailyGoalArea /></Box>
+      <Box className="mt-4 w-max text-xl cursor-pointer" onClick={() => setCredits(true)}><u>Show credits</u></Box>
       <Box className="w-max mx-auto mt-8"><Button variant="outlined" color="error" size="large" onClick={() => setResetDialog(true)}>Reset Data</Button></Box>
     </>
   )
