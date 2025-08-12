@@ -102,7 +102,7 @@ const FoodsAddedTable = ({ foodsAdded, foodsAddedStatus, removeFood, addCustomFo
             <TableCell><TextField variant="standard" value={food.name} onChange={(e) => setFoodsAdded(foodsAdded.map((v, i) => i === index ? { ...v, name: e.target.value } : v ))} /></TableCell>
             <TableCell>
               <TextField className="w-4/10" sx={{marginRight: 1}} variant="standard" value={food.quantity} onChange={(e) => setFoodsAdded(foodsAdded.map((v, i) => i === index ? { ...v, quantity: +e.target.value } : v ))} slotProps={{htmlInput: {type: "number"}}} />
-              <TextField className="w-5/10" variant="standard" value={food.unit} onChange={(e) => setFoodsAdded(foodsAdded.map((v, i) => i === index ? { ...v, unit: e.target.value } : v ))} />
+              <TextField slotProps={{htmlInput: {sx: {textAlign: "right"}}}} className="w-5/10" variant="standard" value={food.unit} onChange={(e) => setFoodsAdded(foodsAdded.map((v, i) => i === index ? { ...v, unit: e.target.value } : v ))} />
             </TableCell>
             <TableCell><TextField variant="standard" value={+(food.calories * food.quantity).toFixed(2)} onChange={(e) => setFoodsAdded(foodsAdded.map((v, i) => i === index ? { ...v, calories: +e.target.value / food.quantity } : v ))} slotProps={{htmlInput: {type: "number"}}} /></TableCell>
             <TableCell><TextField slotProps={{input: {endAdornment: <InputAdornment position="end">g</InputAdornment>}, htmlInput: {type: "number"}}} variant="standard" value={+(food.fat * food.quantity).toFixed(2)} onChange={(e) => setFoodsAdded(foodsAdded.map((v, i) => i === index ? { ...v, fat: +e.target.value / food.quantity } : v ))} /></TableCell>
